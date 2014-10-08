@@ -42,13 +42,14 @@ int main2()
     // reading the datas of the robot
     Motors HRP2motors ;
     vector<int> tmp_begin_end_distance(2);
+    walked_distance.clear();
 
     // preparing the data path
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
+    /*0*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
+    /*1*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
+    /*2*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
+    /*3*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
+    /*4*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/8_12/");
 
     filenames.push_back("walkOnGravlesForward_2014_09_12_11_04-astate.log");
     tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3800 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
@@ -61,9 +62,9 @@ int main2()
     filenames.push_back("walkOnGravlesForward_2014_09_12_11_22-astate.log");
     tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3800 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
 
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/12_24/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/12_24/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/12_24/");
+    /*5*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/12_24/");
+    /*6*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/12_24/");
+    /*7*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/gravles/12_24/");
 
     filenames.push_back("walkOnGravlesForward_2014_09_12_11_35-astate.log");
     tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3800 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
@@ -72,9 +73,9 @@ int main2()
     filenames.push_back("walkOnGravlesForward_2014_09_12_11_41-astate.log");
     tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3800 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
 
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/backCarpet/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/backCarpet/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/backCarpet/");
+    /*8*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/backCarpet/");
+    /*9*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/backCarpet/");
+    /*10*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/backCarpet/");
 
     filenames.push_back("walk5timesLegLength_2014_09_12_13_16-astate.log");
     tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ; beging_end.push_back(tmp_begin_end_distance);
@@ -83,9 +84,9 @@ int main2()
     filenames.push_back("walk5timesLegLength_2014_09_12_13_19-astate.log");
     tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ; beging_end.push_back(tmp_begin_end_distance);
 
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
+    /*11*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
+    /*12*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
+    /*13*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
 
     filenames.push_back("walk5timesLegLength_2014_09_12_13_07-astate.log");
     tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ; beging_end.push_back(tmp_begin_end_distance);
@@ -94,25 +95,59 @@ int main2()
     filenames.push_back("walk5timesLegLength_2014_09_12_13_11-astate.log");
     tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ; beging_end.push_back(tmp_begin_end_distance);
 
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/normal_floor/");
+    /*14*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/normal_floor/");
 
     filenames.push_back("walk5timesLegLength_2014_09_12_13_01-astate.log");
     tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ;  beging_end.push_back(tmp_begin_end_distance);
 
+    // preparing the data path
+    /*15*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/stepOver/");
+    /*16*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/stepOver/");
 
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
-    paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slipFloor/greenCarpet/");
+    filenames.push_back("forwD_simpleElast_trial_Cx1_fixedPelvis-strict-obst20cm-realiste-knee03-04072014-2-astate.log");
+    tmp_begin_end_distance[0] = 3100 ; tmp_begin_end_distance[1] = 3999 ; walked_distance.push_back(0.4149695915) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("forwD_simpleElast_trial_Cx1_fixedPelvis-strict-obst20cm-realiste-knee03-04072014-3-astate.log");
+    tmp_begin_end_distance[0] = 3100 ; tmp_begin_end_distance[1] = 3999 ; walked_distance.push_back(0.4149695915) ; beging_end.push_back(tmp_begin_end_distance);
 
-    filenames.push_back("walk5timesLegLength_2014_09_12_13_07-astate.log");
-    tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ; beging_end.push_back(tmp_begin_end_distance);
-    filenames.push_back("walk5timesLegLength_2014_09_12_13_09-astate.log");
-    tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ; beging_end.push_back(tmp_begin_end_distance);
-    filenames.push_back("walk5timesLegLength_2014_09_12_13_11-astate.log");
-    tmp_begin_end_distance[0] = 200 ; tmp_begin_end_distance[1] = 3700 ; walked_distance.push_back(3.6) ; beging_end.push_back(tmp_begin_end_distance);
+    /*17*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
+    /*18*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
+    /*19*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
 
+    filenames.push_back("climbSlope3deg_2014_09_19_16_22-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("climbSlope3deg_2014_09_19_16_22-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("climbSlope3deg_2014_09_19_16_06-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
 
+    /*20*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
+    /*21*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
 
+    filenames.push_back("climbSlope5deg_2014_09_19_16_33-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3999 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("climbSlope5deg_2014_09_19_16_32-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3999 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+
+    /*22*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/stairs/");
+    /*23*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/stairs/");
+
+    filenames.push_back("ClimbingWithTools-11072014-03-astate.log");
+    tmp_begin_end_distance[0] = 450 ; tmp_begin_end_distance[1] = 3100 ; walked_distance.push_back(0.9) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("StepStairsDownSeq-astate.log");
+    tmp_begin_end_distance[0] = 700 ; tmp_begin_end_distance[1] = 3400 ; walked_distance.push_back(0.9) ; beging_end.push_back(tmp_begin_end_distance);
+
+    /*24*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/steppingStones/");
+    /*25*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/steppingStones/");
+    /*26*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/steppingStones/");
+
+    filenames.push_back("SteppingStones2014_09_26_08_59-astate.log");
+    tmp_begin_end_distance[0] = 0 ; tmp_begin_end_distance[1] = 3300 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("SteppingStones2014_10_02_10_39-astate.log");
+    tmp_begin_end_distance[0] = 0 ; tmp_begin_end_distance[1] = 3300 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("SteppingStones2014_09_26_09_03-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3999 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+
+//1.6 m stepping stone
     // reading the data of the manipulation
     vector< vector<double> > data ;
     vector< vector<double> > energyOfMotors ;
@@ -131,15 +166,16 @@ int main2()
             totalEnergyOfMotors[j] = totalEnergyOfMotors[j]/walked_distance[i];
             totalEnergyOfWalking[j] = totalEnergyOfWalking[j]/walked_distance[i];
         }
-        string path_dump = "/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/experience" ;
+        string path_dump = "/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/SecondTrial/experience" ;
         ostringstream oss ;
         oss.str("");
         oss << path_dump <<  i << "_totalEnergyOfWalking.dat" ;
         cout << oss.str() << endl ;
         dumpEnergyConsummed(oss.str(),totalEnergyOfWalking);
 
-        oss.str("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/experience");
-        oss << i << "_totalEnergyOfMotors.dat" ;
+        path_dump = "/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/SecondTrial/experience" ;
+        oss.str("");
+        oss << path_dump <<  i << "_totalEnergyOfMotors.dat" ;
         dumpEnergyConsummed(oss.str(),totalEnergyOfMotors);
     }
     return 0;
@@ -242,13 +278,15 @@ int treatingData(int experiment_index,
             energyOfMotors[i][j+1] = energyOfMotors[i-1][j+1] + powerOutputMotors[i][j]*dt ;
             energyOfWalk[i][j+1] = energyOfWalk[i-1][j+1] + powerOfWalk[i][j]*dt ;
         }
-
+    }
+    for (unsigned int i = 1 ; i < energyOfMotors.size() ; ++i )
+    {
         double sum1 = 0.0;
         double sum2 = 0.0;
-        for (unsigned int j = 0 ; j < torques.size() ; ++j )
+        for (unsigned int j = 1 ; j < energyOfMotors[0].size() ; ++j )
         {
-            sum1 += energyOfMotors[i][j+1] ;
-            sum2 += energyOfWalk[i][j+1] ;
+            sum1 += energyOfMotors[i][j] ;
+            sum2 += energyOfWalk[i][j] ;
         }
         energyOfMotors[i][0] = sum1 ;
         energyOfWalk[i][0] = sum2 ;
@@ -279,16 +317,17 @@ int dumpEnergyConsummed(string fileName, vector<double> & data)
 {
     ofstream dumpStream ;
     dumpStream.open(fileName.c_str(),ofstream::out);
-    dumpStream << "globalEnergy(J/m)    " ;
-    for (unsigned int j = 1 ; j < data.size()-1 ; ++j)
-        dumpStream << "motor" << j << "Energy(J/m)    " ;
-    dumpStream << "motor" << data.size()-1 << "Energy(J/m)" ;
+//    dumpStream << "globalEnergy(J/m)    " ;
+//    for (unsigned int j = 1 ; j < data.size()-1 ; ++j)
+//        dumpStream << "motor" << j << "Energy(J/m)    " ;
+//    dumpStream << "motor" << data.size()-1 << "Energy(J/m)" ;
 
-    dumpStream << endl;
-    for (unsigned int j = 0 ; j < data.size() ; ++j)
-    {
-        dumpStream << data[j] << " " ;
-    }
+//    dumpStream << endl;
+//    for (unsigned int j = 0 ; j < data.size() ; ++j)
+//    {
+//        dumpStream << data[j] << " " ;
+//    }
+    dumpStream << data[0] ;
     dumpStream << endl ;
     dumpStream.close();
     cout << "dumped" << endl;

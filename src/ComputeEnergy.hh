@@ -1,5 +1,6 @@
 #include "motors.hh"
 
+int main2();
 int readData(int indice, std::vector< std::vector<double> > & data);
 int treatingData(int experiment_index, Motors & hrp2motors,
                  std::vector< std::vector<double> > & data,
