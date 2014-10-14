@@ -1,4 +1,5 @@
 #include "motors.hh"
+#include "explorefolder.hh"
 
 int main2();
 int readData(int indice, std::vector< std::vector<double> > & data);

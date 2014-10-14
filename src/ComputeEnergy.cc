@@ -1,5 +1,6 @@
 #include "ComputeEnergy.hh"
 
+//using namespace boost::filesystem;
 //void getOptions(int argc,
 //                char *argv[],
 //                string & dataPath)
@@ -17,8 +18,9 @@
 //    dataPath=argv[1];
 //  }
 //}
-using namespace std ;
 
+using namespace std ;
+namespace fs = boost::filesystem;
 vector<string> paths ;
 vector<string> filenames ;
 vector< vector<int> > beging_end ;
@@ -26,14 +28,14 @@ vector<double> walked_distance ;
 
 int main(int argc, char *argv[])
 {
+    ExploreFolder explore ;
+    fs::path KPIdir("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI");
+    explore.findLogInFolder(KPIdir);
 
-    main2();
+
+    //main2();
+
     return 0;
-}
-
-int testBoost()
-{
-
 }
 
 
@@ -109,19 +111,19 @@ int main2()
     filenames.push_back("forwD_simpleElast_trial_Cx1_fixedPelvis-strict-obst20cm-realiste-knee03-04072014-3-astate.log");
     tmp_begin_end_distance[0] = 3100 ; tmp_begin_end_distance[1] = 3999 ; walked_distance.push_back(0.4149695915) ; beging_end.push_back(tmp_begin_end_distance);
 
-    /*17*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
-    /*18*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
-    /*19*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
+    /*17*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/slope3/");
+    /*18*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/slope3/");
+    /*19*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/slope3/");
 
-    filenames.push_back("climbSlope3deg_2014_09_19_16_22-astate.log");
-    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
-    filenames.push_back("climbSlope3deg_2014_09_19_16_22-astate.log");
-    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
     filenames.push_back("climbSlope3deg_2014_09_19_16_06-astate.log");
     tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("climbSlope3deg_2014_09_19_16_22-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
+    filenames.push_back("climbSlope3deg_2014_09_19_15_59-astate.log");
+    tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3900 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);
 
-    /*20*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
-    /*21*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/");
+    /*20*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/slope5/");
+    /*21*/paths.push_back("/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/KPI/slopes/slope5/");
 
     filenames.push_back("climbSlope5deg_2014_09_19_16_33-astate.log");
     tmp_begin_end_distance[0] = 2000 ; tmp_begin_end_distance[1] = 3999 ; walked_distance.push_back(1.4) ; beging_end.push_back(tmp_begin_end_distance);

@@ -1,0 +1,4 @@
+#ifndef COMMONTOOLS_HH
+#define COMMONTOOLS_HH
+
+#endif // COMMONTOOLS_HH
