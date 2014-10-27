@@ -26,6 +26,7 @@ FILE(
     src/motors.cc
     src/explorefolder.cc
     src/experience.cc
+    src/commonTools.cc
 )
 
 FILE(
@@ -34,6 +35,7 @@ FILE(
     src/motors.hh
     src/explorefolder.hh
     src/experience.hh
+    src/commonTools.hh
 )
 
 # Search for boost

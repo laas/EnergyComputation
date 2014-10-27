@@ -13,14 +13,7 @@ int ExploreFolder::findLogInFolder(path_t & inputDir )
     if (!files_.empty())
         files_.clear();
     recursiveParcours(inputDir);
-    cout << "before filtering : \n" ;
-    for(result_set_t::iterator iter_files = files_.begin() ; iter_files != files_.end() ; ++iter_files )
-        cout << iter_files->c_str() << endl ;
-
     filterFiles();
-    cout << "\n\n\n\n\n\n\n\n\nafter filtering : \n" ;
-    for(result_set_t::iterator iter_files = files_.begin() ; iter_files != files_.end() ; ++iter_files )
-        cout << iter_files->c_str() << endl ;
 }
 
 // private methods

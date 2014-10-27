@@ -1,10 +1,7 @@
-#include <boost/filesystem.hpp>
+#include <commonTools.hh>
 
 #ifndef EXPLOREFOLDER_HH
 #define EXPLOREFOLDER_HH
-
-typedef boost::filesystem::path path_t;
-typedef std::list<path_t> result_set_t;
 
 class Checker {
 public:
