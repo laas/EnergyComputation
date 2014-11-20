@@ -4,14 +4,16 @@ namespace fs = boost::filesystem;
 using namespace std ;
 
 // public methods
-ExploreFolder::ExploreFolder()
+ExploreFolder::ExploreFolder() : checker_ref("-rstate.log") , checker_state("-astate.log")
 {
 }
 
 int ExploreFolder::findLogInFolder(path_t & inputDir )
 {
-    if (!files_.empty())
-        files_.clear();
+    if (!files_state_input_.empty())
+        files_state_input_.clear();
+    if (!files_ref_input_.empty())
+        files_ref_input_.clear();
     recursiveParcours(inputDir);
     filterFiles();
 }
@@ -31,7 +33,8 @@ int ExploreFolder::recursiveParcours(path_t & inputDir )
             }
             if (fs::is_regular_file(dir_iter->status()) )
             {
-                files_.push_back(*dir_iter);
+                files_ref_input_.push_back(*dir_iter);
+                files_state_input_.push_back(*dir_iter);
             }
         }
         return 1 ;
@@ -51,6 +54,25 @@ bool ExploreFolder::hasEnding (std::string const & fullString, std::string const
 
 int ExploreFolder::filterFiles()
 {
-    files_.remove_if( a_checker );
+    files_state_input_.remove_if( checker_state );
+    files_ref_input_.remove_if( checker_ref );
+
+    files_state_input_.sort(compare_nocase);
+    files_ref_input_.sort(compare_nocase);
+
     return 0 ;
+}
+
+bool compare_nocase (const path_t& first_path, const path_t& second_path)
+{
+    std::string first = first_path.string() ;
+    std::string second = second_path.string() ;
+    unsigned int i=0;
+    while ( (i < first.length()) && (i < second.length()) )
+    {
+        if (tolower(first[i]) < tolower(second[i])) return true;
+        else if (tolower(first[i]) > tolower(second[i])) return false;
+        ++i;
+    }
+    return ( first.length() < second.length() );
 }

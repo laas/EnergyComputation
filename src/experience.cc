@@ -2,9 +2,10 @@
 
 using namespace std ;
 
-Experience::Experience(Motors * hrp2motors, path_t input_path, path_t rootFolder)
+Experience::Experience(Motors * hrp2motors, path_t input_state_path, path_t input_ref_path, path_t rootFolder)
 {
-    input_path_ = input_path ;
+    input_astate_path_ = input_state_path ;
+    input_ref_path_ = input_ref_path ;
     hrp2motors_ = hrp2motors ;
 
     ddl_ = hrp2motors->gear_ratio_.size();
@@ -12,7 +13,7 @@ Experience::Experience(Motors * hrp2motors, path_t input_path, path_t rootFolder
     beginData_ = 0 ;
     endData_ = 0 ;
 
-    data_.clear() ;
+    data_astate_.clear() ;
 
     powerOutputMotors_.clear() ;
     powerOfWalk_.clear() ;
@@ -26,6 +27,8 @@ Experience::Experience(Motors * hrp2motors, path_t input_path, path_t rootFolder
     q_.clear() ;
     dq_.clear() ;
     torques_.clear() ;
+    q_ref_.clear();
+    q_astate_.clear();
 
     setExperienceName(rootFolder);
 }
@@ -33,7 +36,7 @@ Experience::Experience(Motors * hrp2motors, path_t input_path, path_t rootFolder
 int Experience::setExperienceName(path_t rootFolder)
 {
     string rootFolder_st = rootFolder.string();
-    string input_path_st = input_path_.string();
+    string input_path_st = input_astate_path_.string();
 
     experienceName_ = input_path_st.replace(0,rootFolder_st.length()+1,"") ;
 
@@ -92,13 +95,14 @@ int Experience::handleData()
     readData();
     defineBeginEndIndexes();
     computeTheEnergy();
+    compareRefMeasure();
     return 0 ;
 }
 
 int Experience::readData()
 {
-    data_.clear() ;
-    std::string astateFile = input_path_.string() ;
+    data_astate_.clear() ;
+    std::string astateFile = input_astate_path_.string() ;
     std::ifstream dataStream ;
     dataStream.open(astateFile.c_str(),std::ifstream::in);
 
@@ -112,13 +116,33 @@ int Experience::readData()
         vector<double> oneLine(176) ;
         for (unsigned int i = 0 ; i < oneLine.size() ; ++i)
             dataStream >> oneLine[i];
-        data_.push_back(oneLine);
+        data_astate_.push_back(oneLine);
+    }
+    dataStream.close();
+
+    data_ref_.clear() ;
+    std::string rstateFile = input_ref_path_.string() ;
+    dataStream.open(rstateFile.c_str(),std::ifstream::in);
+
+    // skipping header
+    titleRobotConfig_.resize(95) ;
+    for (unsigned int i = 0 ; i < titleRobotConfig_.size() ; ++i)
+        dataStream >> titleRobotConfig_[i];
+
+    // reading all the data file
+    while (dataStream.good()) {
+        vector<double> oneLine(100) ;
+        for (unsigned int i = 0 ; i < oneLine.size() ; ++i)
+            dataStream >> oneLine[i];
+        data_ref_.push_back(oneLine);
     }
     dataStream.close();
 
     // save the data wanted in separated buffers for computation
-    int N = data_.size() ;
+    int N = data_astate_.size() ;
     q_.resize( N , vector<double>(ddl_,0) ) ;
+    q_ref_.resize( N , vector<double>(ddl_,0) ) ;
+    q_astate_.resize( N , vector<double>(ddl_,0) );
     dq_.resize( N , vector<double>(ddl_,0) ) ;
     torques_.resize( N , vector<double>(ddl_,0) ) ;
 
@@ -126,11 +150,16 @@ int Experience::readData()
     {
         for (unsigned int j = 0 ; j < 30 ; ++j )
         {
-            q_[i][j] = hrp2motors_->gear_ratio_[j] * data_[i][j];
+            q_[i][j] = hrp2motors_->gear_ratio_[j] * data_astate_[i][j];
+        }
+        for (unsigned int j = 0 ; j < 30 ; ++j )
+        {
+            q_astate_[i][j] = data_astate_[i][j];
+            q_ref_[i][j] = data_ref_[i][j];
         }
         for (unsigned int j = 40 ; j < 40+30 ; ++j )
         {
-            torques_[i][j-40] = data_[i][j];
+            torques_[i][j-40] = data_astate_[i][j];
         }
     }
 
@@ -157,7 +186,7 @@ int Experience::readData()
 
 int Experience::defineBeginEndIndexes()
 {
-    int N = data_.size() ;
+    int N = data_astate_.size() ;
     unsigned int i = 0 ;
     bool found = false ;
     while ( !found && i < N )
@@ -199,11 +228,19 @@ int Experience::defineBeginEndIndexes()
     q_.resize(endData_-beginData_);
     dq_.resize(endData_-beginData_);
 
+    vector< vector<double> > tmp_q_ref = q_ref_ ;
+    vector< vector<double> > tmp_q_astate = q_astate_ ;
+
+    q_ref_.resize(endData_-beginData_);
+    q_astate_.resize(endData_-beginData_);
     for(unsigned int k = 0 ; k < torques_.size() ; ++k)
     {
         torques_[k] = tmp_torques[k+beginData_] ;
         q_[k] = tmp_q[k+beginData_] ;
         dq_[k] = tmp_dq[k+beginData_] ;
+
+        q_ref_[k] = tmp_q_ref[k+beginData_] ;
+        q_astate_[k] = tmp_q_astate[k+beginData_] ;
     }
     return 0 ;
 }
@@ -248,3 +285,75 @@ int Experience::computeTheEnergy()
     return 0 ;
 }
 
+int Experience::compareRefMeasure()
+{
+    unsigned int N = q_ref_.size() ;
+    errMeasureReference_.resize(N) ;
+    for (unsigned int i = 0 ; i < N ; ++i)
+    {
+        errMeasureReference_[i] = vector<double>( ddl_ , 0.0) ;
+    }
+
+    for (unsigned int i = 0 ; i < N ; ++i)
+    {
+        for (unsigned int j = 0 ; j < ddl_ ; ++j)
+        {
+            errMeasureReference_[i][j] = sqrt( (q_ref_[i][j]-q_astate_[i][j])*(q_ref_[i][j]-q_astate_[i][j]) );
+        }
+    }
+
+    vector<double> avrg_joints (ddl_,0.0);
+    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+    {
+        avrg_joints[j] = 0.0 ;
+        for (unsigned int i = 0 ; i < N ; ++i)
+        {
+            avrg_joints[j] += errMeasureReference_[i][j] ;
+        }
+        avrg_joints[j] = avrg_joints[j] / N ;
+    }
+
+    vector<double> variance_joints (ddl_,0.0);
+    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+    {
+        variance_joints[j] = 0.0 ;
+        for (unsigned int i = 0 ; i < N ; ++i)
+        {
+            variance_joints[j] += (errMeasureReference_[i][j] - avrg_joints[j]) *
+                                  (errMeasureReference_[i][j] - avrg_joints[j]) ;
+        }
+        variance_joints[j] / N ;
+    }
+
+    vector<double> fair_die_joints (ddl_,0.0);
+    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+    {
+        fair_die_joints[j] = sqrt(variance_joints[j]) ;
+    }
+
+    cout << "average per joints :\n" ;
+    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+    {
+        cout << avrg_joints[j] << " " ;
+    }
+    cout << endl ;
+
+    cout << "variance per joints :\n" ;
+    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+    {
+        cout << variance_joints[j] << " " ;
+    }
+    cout << endl ;
+
+    cout << "fair die per joints :\n" ;
+    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+    {
+        cout << fair_die_joints[j] << " " ;
+    }
+    cout << endl ;
+
+    string dump = experienceName_ + "_q_ref.dat" ;
+    dumpData( dump , q_ref_ ) ;
+    dump = experienceName_ + "q_astate.dat" ;
+    dumpData( dump , q_astate_ ) ;
+}

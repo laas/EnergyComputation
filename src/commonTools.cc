@@ -63,7 +63,7 @@ void getOptions(int argc,
                 path_t & dataRootPath,
                 path_t & outputFile)
 {
-  std::cout << "argc:" << argc << std::endl;
+  //std::cout << "argc:" << argc << std::endl;
   if (argc < 2)
   {
     cerr << " This program takes 1 arguments: " << endl;

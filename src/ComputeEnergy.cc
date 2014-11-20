@@ -13,15 +13,18 @@ int main(int argc, char *argv[])
     ExploreFolder explore ;
     explore.findLogInFolder(dataRootPath);
 
-    result_set_t * files = explore.files() ;
-    vector<string> fileNames (files->size());
+    vector<result_set_t> * files = explore.files() ;
+
     vector<Experience> Xp ;
 
-    result_set_t::iterator it_file = files->begin();
-    for (unsigned int i = 0 ; i < files->size() ; ++i, ++it_file)
+    result_set_t::iterator it_file_astate = (*files)[0].begin();
+    result_set_t::iterator it_file_ref = (*files)[1].begin();
+    for (unsigned int i = 0 ; i < (*files)[0].size() ; ++i, ++it_file_astate, ++it_file_ref)
     {
-        cout << it_file->string() << endl ;
-        Experience tmp_Xp = Experience (&HRP2motors,*it_file,dataRootPath);
+        cout << "file " << i <<  " " ;
+        cout << it_file_astate->string() << endl ;
+
+        Experience tmp_Xp = Experience (&HRP2motors,*it_file_astate, *it_file_ref,dataRootPath);
         tmp_Xp.handleData();
         Xp.push_back(tmp_Xp);
     }

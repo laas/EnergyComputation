@@ -3,12 +3,14 @@
 #ifndef EXPLOREFOLDER_HH
 #define EXPLOREFOLDER_HH
 
+bool compare_nocase (const path_t& first_path, const path_t& second_path);
+
 class Checker {
 public:
 
-    Checker()
+    Checker(std::string name)
     {
-        ending_ = "-astate.log" ;
+        ending_ = name ;
         endLength_ = ending_.length() ;
     }
 
@@ -48,8 +50,13 @@ public:
         { return ExploreFolder::hasEnding (input_path.string(), "-astate.log"); }
 
     // getter
-    inline result_set_t * files ()
-    {return &files_ ;}
+    inline std::vector<result_set_t> * files ()
+    {
+        files_.clear();
+        files_.push_back(files_state_input_);
+        files_.push_back(files_ref_input_);
+        return &files_ ;
+    }
 
 private:
     int recursiveParcours(path_t & inputDir) ;
@@ -57,9 +64,13 @@ private:
     int filterFiles();
 
 private:
-    result_set_t files_ ;
+    result_set_t files_state_input_ ;
     result_set_t files_Output_ ;
-    Checker a_checker ;
+    result_set_t files_ref_input_ ;
+
+    std::vector<result_set_t> files_ ;
+    Checker checker_ref ;
+    Checker checker_state ;
 
 };
 
