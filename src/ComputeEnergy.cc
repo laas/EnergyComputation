@@ -32,13 +32,14 @@ int main(int argc, char *argv[])
     ofstream dumpStream ;
     dumpStream.open(outputFile.c_str(),ofstream::out);
 
-    dumpStream << "ExperienceName\tWalkedDistance\tEnergyOfMotors\tEnergyOfWalking\n" ;
+    dumpStream << "ExperienceName\tWalkedDistance\tEnergyOfMotors\tEnergyOfWalking\tDurationOfTheExperiment\n" ;
     for (unsigned int i = 0 ; i < Xp.size() ; ++i)
     {
-        dumpStream << Xp[i].name() << "\t"
+        dumpStream << Xp[i].name()            << "\t"
                    << Xp[i].walkedDistanced() << "\t"
-                   << Xp[i].EnergyOfMotor() << "\t"
-                   << Xp[i].EnergyOfWalking() << endl ;
+                   << Xp[i].EnergyOfMotor()   << "\t"
+                   << Xp[i].EnergyOfWalking() << "\t"
+                   << Xp[i].TimeTravelled()   << endl ;
     }
     dumpStream.close();
     cout << "dumped" << endl;

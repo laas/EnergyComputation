@@ -22,6 +22,8 @@ public: // methods
     {return EnergyOfMotor_J_m_ ;}
     double EnergyOfWalking()
     {return EnergyOfWalking_J_m_ ;}
+    double TimeTravelled()
+    {return (0.005*(endData_-beginData_)) ;}
 
 private : // methods
     int setExperienceName(path_t rootFolder);
@@ -57,6 +59,8 @@ private : // attributes
     double walkedDistanced_ ;
     double EnergyOfMotor_J_m_ ;
     double EnergyOfWalking_J_m_ ;
+
+    InfiniteImpendanceFilter IIF ;
 };
 
 #endif // EXPERIENCE_HH

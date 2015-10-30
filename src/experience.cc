@@ -82,6 +82,11 @@ int Experience::setExperienceName(path_t rootFolder)
     if ( found != std::string::npos)
         walkedDistanced_ = 0.9 ;
 
+    astring = "multicontact" ;
+    found = experienceName_.find(astring);
+    if ( found != std::string::npos)
+        walkedDistanced_ = 0.6 ;
+
     astring = "steppingStones" ;
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
@@ -163,23 +168,31 @@ int Experience::readData()
         }
     }
 
-    //    // use an order 1 finite low pass filter to clean the data
-    for (unsigned int j = 0 ; j < ddl_ ; ++j )
-        for (unsigned int i = 0 ; i < N ; ++i )
-            lowpass(torques_[i][j],torques_[i][j],i,0.03);
+    std::vector< std::vector<double> > q_tmp = q_ ;
+    string dump = experienceName_ + "_q.dat" ;
+    dumpData( dump , q_ ) ;
 
-//    for (unsigned int j = 0 ; j < ddl_ ; ++j )
-//        for (unsigned int i = 0 ; i < N ; ++i )
-//            lowpass(q_[i][j],q_[i][j],i,0.01);
+    IIF.filter(q_,q_tmp);
+
+    dump = experienceName_ + "_q_filter.dat" ;
+    dumpData( dump , q_tmp ) ;
+
+    std::vector< std::vector<double> > torques_tmp = torques_ ;
+    dump = experienceName_ + "_torques.dat" ;
+    dumpData( dump , torques_ ) ;
+
+    IIF.filter(torques_,torques_tmp);
+
+    dump = experienceName_ + "_torques_filter.dat" ;
+    dumpData( dump , torques_tmp ) ;
 
     // compute the velocity of the joints by finite differenziation
     for (unsigned int j = 0 ; j < ddl_ ; ++j )
         for (unsigned int i = 0 ; i < N ; ++i )
-            derivation(q_[i][j],dq_[i][j],i);
+            derivation(q_tmp[i][j],dq_[i][j],i);
 
-    for (unsigned int j = 0 ; j < ddl_ ; ++j )
-        for (unsigned int i = 0 ; i < N ; ++i )
-            lowpass(dq_[i][j],dq_[i][j],i,0.03);
+    dump = experienceName_ + "_dq_.dat" ;
+    dumpData( dump , dq_ ) ;
 
     return 0;
 }
@@ -193,8 +206,8 @@ int Experience::defineBeginEndIndexes()
     {
         int test = 0 ;
         for (unsigned int j = 0 ; j < ddl_ ; ++j )
-            test += abs(dq_[i][j]) > 0.5 ;
-        if (test >= (int)(ddl_/5) )
+            test += (abs(dq_[i][j]) > 5) ;
+        if (test >= 6 )
             found = true ;
         else
             found = false ;
@@ -202,6 +215,7 @@ int Experience::defineBeginEndIndexes()
         beginData_ = i ;
         ++i;
     }
+    //beginData_ = 0 ;
     if(i == N-1)
         cout << "Failure to find the beggining of the motion\n" ;
 
@@ -219,6 +233,8 @@ int Experience::defineBeginEndIndexes()
         endData_ = i ;
         ++i;
     }
+    endData_ = dq_.size()-1 ;
+    cout << beginData_ << " " << endData_ << endl ;
 
     vector< vector<double> > tmp_torques = torques_ ;
     vector< vector<double> > tmp_q = q_ ;
@@ -279,8 +295,8 @@ int Experience::computeTheEnergy()
         EnergyOfMotor_J_m_ += energyOfMotors.back()[j] ;
         EnergyOfWalking_J_m_ += energyOfWalk.back()[j] ;
     }
-    EnergyOfMotor_J_m_ = EnergyOfMotor_J_m_/walkedDistanced_ ;
-    EnergyOfWalking_J_m_ = EnergyOfWalking_J_m_/walkedDistanced_;
+    EnergyOfMotor_J_m_   = EnergyOfMotor_J_m_   /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
+    EnergyOfWalking_J_m_ = EnergyOfWalking_J_m_ /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
 
     return 0 ;
 }
@@ -331,29 +347,29 @@ int Experience::compareRefMeasure()
         fair_die_joints[j] = sqrt(variance_joints[j]) ;
     }
 
-    cout << "average per joints :\n" ;
-    for (unsigned int j = 0 ; j < ddl_ ; ++j)
-    {
-        cout << avrg_joints[j] << " " ;
-    }
-    cout << endl ;
+//    cout << "average per joints :\n" ;
+//    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+//    {
+//        cout << avrg_joints[j] << " " ;
+//    }
+//    cout << endl ;
 
-    cout << "variance per joints :\n" ;
-    for (unsigned int j = 0 ; j < ddl_ ; ++j)
-    {
-        cout << variance_joints[j] << " " ;
-    }
-    cout << endl ;
+//    cout << "variance per joints :\n" ;
+//    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+//    {
+//        cout << variance_joints[j] << " " ;
+//    }
+//    cout << endl ;
 
-    cout << "fair die per joints :\n" ;
-    for (unsigned int j = 0 ; j < ddl_ ; ++j)
-    {
-        cout << fair_die_joints[j] << " " ;
-    }
-    cout << endl ;
+//    cout << "fair die per joints :\n" ;
+//    for (unsigned int j = 0 ; j < ddl_ ; ++j)
+//    {
+//        cout << fair_die_joints[j] << " " ;
+//    }
+//    cout << endl ;
 
     string dump = experienceName_ + "_q_ref.dat" ;
     dumpData( dump , q_ref_ ) ;
-    dump = experienceName_ + "q_astate.dat" ;
+    dump = experienceName_ + "_q_astate.dat" ;
     dumpData( dump , q_astate_ ) ;
 }
