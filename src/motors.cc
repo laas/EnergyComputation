@@ -1,15 +1,14 @@
 #include "motors.hh"
 
-Motors::Motors()
+Motors::Motors(path_t robotFile)
 {
-    readData();
+    readData(robotFile);
     //DisplayAll();
     ComputeConstantForEnergy();
 }
 
-int Motors::readData(){
-    std::string dataPath = "/home/mnaveau/devel/ComputeEnergyFromOpenHRPLogs/data/" ;
-    std::string RobotConfig = dataPath + "HRP2verySimple.dat" ;
+int Motors::readData(path_t robotFile){
+    std::string RobotConfig = robotFile.string() ;
     std::ifstream dataStream ;
     dataStream.open(RobotConfig.c_str(),std::ifstream::in);
 
@@ -35,6 +34,7 @@ int Motors::readData(){
     }
 
     dataStream.close();
+    DisplayAll();
     return 0;
 }
 

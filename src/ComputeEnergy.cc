@@ -6,10 +6,11 @@ namespace fs = boost::filesystem;
 int main(int argc, char *argv[])
 {
     path_t dataRootPath("");
+    path_t robotRootPath("");
     path_t outputFile("");
-    getOptions(argc,argv,dataRootPath,outputFile);
+    getOptions(argc,argv,dataRootPath,robotRootPath,outputFile);
 
-    Motors HRP2motors ;
+    Motors HRP2motors (robotRootPath) ;
     ExploreFolder explore ;
     explore.findLogInFolder(dataRootPath);
 

@@ -7,13 +7,14 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <commonTools.hh>
 
 class Motors
 {
 public:
-    Motors();
+    Motors(path_t robotFile);
 
-    int readData();
+    int readData(path_t robotFile);
 
     int DisplayJointI(int i);
     int DisplayAll();
