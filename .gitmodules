@@ -1,6 +1,6 @@
-[submodule "jrl-cmakemodules"]
-	path = cmake
-	url = https://github.com/jrl-umi3218/jrl-cmakemodules.git
 [submodule "data/KPI"]
 	path = data/KPI
 	url = https://github.com/laas/koroibot_KPI.git
+[submodule "cmake"]
+	path = cmake
+	url = https://github.com/jrl-umi3218/jrl-cmakemodules.git
