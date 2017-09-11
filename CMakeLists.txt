@@ -45,5 +45,5 @@ SEARCH_FOR_BOOST()
 ADD_REQUIRED_DEPENDENCY("pinocchio >=  1.2.4")
 
 ADD_EXECUTABLE(hrp2energy ${source_files})
-
+PKG_CONFIG_USE_DEPENDENCY(hrp2energy pinocchio)
 TARGET_LINK_LIBRARIES(hrp2energy ${Boost_LIBRARIES})

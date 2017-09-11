@@ -18,7 +18,7 @@ int dumpData(std::string fileName, std::vector< std::vector<double> >& data);
 void getOptions(int argc,
                 char *argv[],
                 path_t &dataRootPath,
-                path_t &robotRootPath,
+                path_t &robotRootPath, path_t &robotUrdfPath,
                 path_t &outputFile);
 
 

@@ -49,7 +49,8 @@ int ExploreFolder::recursiveParcours(path_t & inputDir )
 
 bool ExploreFolder::hasEnding (std::string const & fullString, std::string const & ending)
 {
-
+  std::cout << "WARNING : function not implemented! undefined behavior" << std::cout;
+  return false ;
 }
 
 int ExploreFolder::filterFiles()

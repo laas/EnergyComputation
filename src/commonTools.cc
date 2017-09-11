@@ -62,19 +62,21 @@ void getOptions(int argc,
                 char *argv[],
                 path_t & dataRootPath,
                 path_t & robotRootPath,
+                path_t & robotUrdfPath,
                 path_t & outputFile)
 {
   //std::cout << "argc:" << argc << std::endl;
-  if (argc < 3)
+  if (argc < 4)
   {
     cerr << " This program takes 1 arguments: " << endl;
-    cerr << "./hrp2energy DATA_PATH ROBOT_FILE_FULL_PATH" << endl;
+    cerr << "./hrp2energy DATA_PATH ROBOT_FILE_PATH ROBOT_URDF_PATH" << endl;
     exit(-1);
   }
   else
   {
     dataRootPath=path_t(argv[1]);
     robotRootPath=path_t(argv[2]);
+    robotUrdfPath=path_t(argv[3]);
     boost::gregorian::date d = boost::gregorian::day_clock::universal_day();
     ostringstream fileName ("") ;
     fileName << dataRootPath.string() << "/results_" << d.year() << "_" << d.month() << "_" << d.day() << ".txt" ;
