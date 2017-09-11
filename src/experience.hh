@@ -52,12 +52,18 @@ private : // attributes
     std::vector< std::vector<double> > data_astate_ ;
     std::vector< std::vector<double> > data_ref_ ;
 
-    std::vector< std::vector<double> > q_ ;
+    // value computed from filtered signal
+    // q_,dq_,ddq_ are evaluated as the motor rotation
+    std::vector< std::vector<double> > q_,dq_,ddq_ ;
+    // q_j_,dq_j_,dq_j_,
+    std::vector< std::vector<double> > q_joint_ ;
+    // reference torques at the motor level
+    std::vector< std::vector<double> > torques_ ;
+    // rnea at the joint level
+    std::vector< std::vector<double> > rnea_torques_ ;
+    // raw data
     std::vector< std::vector<double> > q_astate_ ;
     std::vector< std::vector<double> > q_ref_ ;
-    std::vector< std::vector<double> > dq_ ;
-    std::vector< std::vector<double> > torques_ ;
-    std::vector< std::vector<double> > rnea_torques_ ;
 
     std::vector< std::vector<double> > powerOutputMotors_ ;
     std::vector< std::vector<double> > powerOfWalk_ ;

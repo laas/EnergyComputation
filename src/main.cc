@@ -46,7 +46,11 @@ int main(int argc, char *argv[])
                                         *it_file_ref,
                                         dataRootPath);
         // treat the data log
-        tmp_Xp.handleData();
+        if (tmp_Xp.handleData()==-1)
+        {
+          std::cout<< "wrong computation of data log ignored" << std::endl;
+          continue;
+        }
         // save the object in the "Xp" vector
         Xp.push_back(tmp_Xp);
     }

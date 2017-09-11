@@ -104,7 +104,10 @@ int Experience::setExperienceName(path_t rootFolder)
 int Experience::handleData()
 {
     readData();
-    defineBeginEndIndexes();
+    if (defineBeginEndIndexes() == -1)
+    {
+      return -1;
+    }
     computeTheEnergy();
     compareRefMeasure();
     return 0 ;
@@ -155,6 +158,7 @@ int Experience::readData()
     q_ref_.resize( N , vector<double>(ddl_,0) ) ;
     q_astate_.resize( N , vector<double>(ddl_,0) );
     dq_.resize( N , vector<double>(ddl_,0) ) ;
+    ddq_.resize( N , vector<double>(ddl_,0) ) ;
     torques_.resize( N , vector<double>(ddl_,0) ) ;
     rnea_torques_.resize( N , vector<double>(ddl_,0) ) ;
 
@@ -174,33 +178,34 @@ int Experience::readData()
             torques_[i][j-40] = data_astate_[i][j];
         }
     }
-
+    // Create a temporary vector q_motor
     std::vector< std::vector<double> > q_tmp = q_ ;
-    string dump = experienceName_ + "_q.dat" ;
-    dumpData( dump , q_ ) ;
-
     IIF.filter(q_,q_tmp);
-
-    dump = experienceName_ + "_q_filter.dat" ;
-    dumpData( dump , q_tmp ) ;
-
     std::vector< std::vector<double> > torques_tmp = torques_ ;
-    dump = experienceName_ + "_torques.dat" ;
-    dumpData( dump , torques_ ) ;
-
     IIF.filter(torques_,torques_tmp);
 
-    dump = experienceName_ + "_torques_filter.dat" ;
-    dumpData( dump , torques_tmp ) ;
-
     // compute the velocity of the joints by finite differenziation
-    for (unsigned int j = 0 ; j < ddl_ ; ++j )
-        for (unsigned int i = 0 ; i < N ; ++i )
-            derivation(q_tmp[i][j],dq_[i][j],i);
+    derivation(q_tmp,dq_);
 
+    // compute the acceleration of the joints by finite differenziation
+    derivation(dq_,ddq_);
+
+    string dump = experienceName_+"_q.dat" ;
+    dumpData( dump , q_ ) ;
     dump = experienceName_ + "_dq_.dat" ;
     dumpData( dump , dq_ ) ;
-
+    dump = experienceName_ + "_ddq_.dat" ;
+    dumpData( dump , ddq_ ) ;
+    dump = experienceName_ + "_torques_filter.dat" ;
+    dumpData( dump , torques_tmp ) ;
+    dump = experienceName_ + "_torques.dat" ;
+    dumpData( dump , torques_ ) ;
+    dump = experienceName_ + "_q_filter.dat" ;
+    dumpData( dump , q_tmp ) ;
+    dump = experienceName_ + "_q_ref.dat" ;
+    dumpData( dump , q_ref_ ) ;
+    dump = experienceName_ + "_q_astate.dat" ;
+    dumpData( dump , q_astate_ ) ;
     return 0;
 }
 
@@ -223,8 +228,11 @@ int Experience::defineBeginEndIndexes()
         ++i;
     }
     //beginData_ = 0 ;
-    if(i == N-1)
+    if(i == N)
+    {
         cout << "Failure to find the beggining of the motion\n" ;
+        return -1 ;
+    }
 
     found = false ;
     while ( !found && i < N )
@@ -374,9 +382,4 @@ int Experience::compareRefMeasure()
 //        cout << fair_die_joints[j] << " " ;
 //    }
 //    cout << endl ;
-
-    string dump = experienceName_ + "_q_ref.dat" ;
-    dumpData( dump , q_ref_ ) ;
-    dump = experienceName_ + "_q_astate.dat" ;
-    dumpData( dump , q_astate_ ) ;
 }

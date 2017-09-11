@@ -22,20 +22,23 @@ int lowpass( double x, double & y, double i, double a)
     return 0 ;
 }
 
-int derivation( double x, double & dx, double i)
+int derivation( const std::vector< std::vector<double> > & x,
+                std::vector< std::vector<double> > & dx)
 {
-    static double x_1 = 0.0 ;
-    if (i==0)
+    double dt = 0.005 ;
+    assert(x.size()!=0 && "No data to derive");
+    assert(x[0].size()!=0 && "Correct number of degree of freedom but no to derive");
+    unsigned rows = x.size();
+    unsigned cols = x[0].size();
+    for (unsigned int j = 0 ; j < cols ; ++j )
     {
-        dx = 0.0 ;
-        x_1 = x ;
-        return 0;
-    }
-    else
-    {
-        double dt = 0.005 ;
-        dx = (x - x_1)/dt ;
-        x_1 = x ;
+        double x_1=x[0][j];
+        dx[0][j]=0.0;
+        for (unsigned int i = 1 ; i < rows ; ++i )
+        {
+            dx[i][j] = (x[i][j] - x_1)/dt ;
+            x_1=x[i][j];
+        }
     }
     return 0 ;
 }

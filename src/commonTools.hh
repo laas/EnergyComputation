@@ -11,7 +11,8 @@ typedef boost::filesystem::path path_t;
 typedef std::list<path_t> result_set_t;
 
 int lowpass(double x, double &y, double i, double a);
-int derivation( double x, double & dx, double i);
+int derivation(const std::vector<std::vector<double> > &x,
+               std::vector<std::vector<double> > &dx);
 
 int dumpData(std::string fileName, std::vector< std::vector<double> >& data);
 
