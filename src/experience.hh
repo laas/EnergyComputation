@@ -9,7 +9,7 @@ class Experience
 {
 public: // methods
     Experience(Motors * hrp2motors,
-               se3::Model * hrp2model,
+               //se3::Model * hrp2model,
                path_t input_state_path,
                path_t input_ref_path,
                path_t rootFolder);
@@ -46,8 +46,8 @@ private : // attributes
     int endData_ ;
     unsigned int ddl_ ;
     Motors * hrp2motors_ ;
-    se3::Model * robotModel_ ;
-    se3::Data * robotData_ ;
+    //se3::Model * robotModel_ ;
+    //se3::Data * robotData_ ;
     std::vector< std::string > titleRobotConfig_ ;
     std::vector< std::vector<double> > data_astate_ ;
     std::vector< std::vector<double> > data_ref_ ;

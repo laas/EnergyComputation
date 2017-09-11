@@ -3,7 +3,7 @@
 using namespace std ;
 
 Experience::Experience(Motors * hrp2motors,
-           se3::Model * hrp2model,
+           //se3::Model * hrp2model,
            path_t input_state_path,
            path_t input_ref_path,
            path_t rootFolder)
@@ -11,8 +11,8 @@ Experience::Experience(Motors * hrp2motors,
     input_astate_path_ = input_state_path ;
     input_ref_path_ = input_ref_path ;
     hrp2motors_ = hrp2motors ;
-    robotModel_ = hrp2model ;
-    robotData_ = new se3::Data(*robotModel_);
+//    robotModel_ = hrp2model ;
+//    robotData_ = new se3::Data(*robotModel_);
 
     ddl_ = hrp2motors->gear_ratio_.size();
 

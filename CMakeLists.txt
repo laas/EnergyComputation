@@ -42,7 +42,7 @@ FILE(
 # Boost filesystem is used to read the datafiles.
 SEARCH_FOR_BOOST()
 # Use pinocchio to compute the torques during the motion
-ADD_REQUIRED_DEPENDENCY("pinocchio >=  1.2.4")
+#ADD_REQUIRED_DEPENDENCY("pinocchio >=  1.2.4")
 # add eigen to compute the torques via rnea
 ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.0.5")
 INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIRS})
