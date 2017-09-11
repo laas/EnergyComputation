@@ -1,4 +1,4 @@
-#include "ComputeEnergy.hh"
+#include "main.hh"
 
 using namespace std ;
 namespace fs = boost::filesystem;

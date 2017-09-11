@@ -22,7 +22,7 @@ INCLUDE_DIRECTORIES(./src/)
 #Configuration de l'exécutable
 FILE(
     GLOB_RECURSE source_files
-    src/ComputeEnergy.cc
+    src/main.cc
     src/motors.cc
     src/explorefolder.cc
     src/experience.cc
@@ -31,7 +31,7 @@ FILE(
 
 FILE(
     GLOB_RECURSE include_files
-    src/ComputeEnergy.hh
+    src/main.hh
     src/motors.hh
     src/explorefolder.hh
     src/experience.hh
@@ -41,6 +41,8 @@ FILE(
 # Search for boost
 # Boost filesystem is used to read the datafiles.
 SEARCH_FOR_BOOST()
+# Use pinocchio to compute the torques during the motion
+ADD_REQUIRED_DEPENDENCY("pinocchio >=  1.2.4")
 
 ADD_EXECUTABLE(hrp2energy ${source_files})
 
