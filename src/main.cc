@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         // treat the data log
         if (tmp_Xp.handleData()==-1)
         {
-          std::cout<< "wrong computation of data log ignored" << std::endl;
+          std::cout<< "wrong computation of data, log ignored" << std::endl;
           continue;
         }
         // save the object in the "Xp" vector

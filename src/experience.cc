@@ -230,7 +230,7 @@ int Experience::defineBeginEndIndexes()
     //beginData_ = 0 ;
     if(i == N)
     {
-        cout << "Failure to find the beggining of the motion\n" ;
+        cout << "Failure to find the beginning of the motion\n" ;
         return -1 ;
     }
 
