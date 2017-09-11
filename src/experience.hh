@@ -23,9 +23,9 @@ public: // methods
     double walkedDistanced()
     {return walkedDistanced_ ;}
     double EnergyOfMotor()
-    {return EnergyOfMotor_J_m_ ;}
+    {return EnergyOfMotor_J_m_s_ ;}
     double EnergyOfWalking()
-    {return EnergyOfWalking_J_m_ ;}
+    {return EnergyOfWalking_J_m_s_ ;}
     double TimeTravelled()
     {return (0.005*(endData_-beginData_)) ;}
 
@@ -70,8 +70,8 @@ private : // attributes
     std::vector< std::vector<double> > errMeasureReference_ ;
 
     double walkedDistanced_ ;
-    double EnergyOfMotor_J_m_ ;
-    double EnergyOfWalking_J_m_ ;
+    double EnergyOfMotor_J_m_s_ ;
+    double EnergyOfWalking_J_m_s_ ;
 
     InfiniteImpendanceFilter IIF ;
 };

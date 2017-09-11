@@ -24,8 +24,8 @@ Experience::Experience(Motors * hrp2motors,
     powerOutputMotors_.clear() ;
     powerOfWalk_.clear() ;
 
-    EnergyOfMotor_J_m_ = 0.0 ;
-    EnergyOfWalking_J_m_ = 0.0 ;
+    EnergyOfMotor_J_m_s_ = 0.0 ;
+    EnergyOfWalking_J_m_s_ = 0.0 ;
     walkedDistanced_ = -1.0 ;
 
     titleRobotConfig_.clear() ;
@@ -303,15 +303,15 @@ int Experience::computeTheEnergy()
         }
     }
 
-    EnergyOfMotor_J_m_ = 0.0;
-    EnergyOfWalking_J_m_ = 0.0;
+    EnergyOfMotor_J_m_s_ = 0.0;
+    EnergyOfWalking_J_m_s_ = 0.0;
     for (unsigned int j = 0 ; j < ddl_ ; ++j )
     {
-        EnergyOfMotor_J_m_ += energyOfMotors.back()[j] ;
-        EnergyOfWalking_J_m_ += energyOfWalk.back()[j] ;
+        EnergyOfMotor_J_m_s_ += energyOfMotors.back()[j] ;
+        EnergyOfWalking_J_m_s_ += energyOfWalk.back()[j] ;
     }
-    EnergyOfMotor_J_m_   = EnergyOfMotor_J_m_   /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
-    EnergyOfWalking_J_m_ = EnergyOfWalking_J_m_ /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
+    EnergyOfMotor_J_m_s_   = EnergyOfMotor_J_m_s_   /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
+    EnergyOfWalking_J_m_s_ = EnergyOfWalking_J_m_s_ /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
 
     return 0 ;
 }

@@ -59,16 +59,20 @@ int main(int argc, char *argv[])
     ofstream dumpStream ;
     dumpStream.open(outputFile.c_str(),ofstream::out);
     // save the important values extracted from the experiment
-    dumpStream << "ExperienceName\tWalkedDistance\tEnergyOfMotors\tEnergyOfWalking\tDurationOfTheExperiment\n" ;
+    dumpStream << "ExperienceName\t\
+                   WalkedDistance(m)\t\
+                   DurationOfTheExperiment(s)\t\
+                   EnergyOfMotors(J.m-1.s-1)\t\
+                   EnergyOfWalking(J.m-1.s-1) \n" ;
     for (unsigned int i = 0 ; i < Xp.size() ; ++i)
     {
         dumpStream << Xp[i].name()            << "\t"
                    << Xp[i].walkedDistanced() << "\t"
-                   << Xp[i].EnergyOfMotor()   << "\t"
+                   << Xp[i].TimeTravelled()   << "\t"
                    << Xp[i].EnergyOfWalking() << "\t"
-                   << Xp[i].TimeTravelled()   << endl ;
+                   << Xp[i].EnergyOfMotor()   << endl ;
     }
     dumpStream.close();
-    cout << "dumped" << endl;
+    cout << "results dumped in " << outputFile.c_str() << endl;
     return 0 ;
 }

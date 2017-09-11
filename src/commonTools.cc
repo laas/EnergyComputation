@@ -83,7 +83,7 @@ void getOptions(int argc,
     //robotUrdfPath=path_t(argv[3]);
     boost::gregorian::date d = boost::gregorian::day_clock::universal_day();
     ostringstream fileName ("") ;
-    fileName << dataRootPath.string() << "/results_" << d.year() << "_" << d.month() << "_" << d.day() << ".txt" ;
+    fileName << /*dataRootPath.string()*/ "." << "/results_" << d.year() << "_" << d.month() << "_" << d.day() << ".txt" ;
     outputFile = path_t(fileName.str());
     cout << outputFile.string() << endl ;
   }
