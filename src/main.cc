@@ -1,8 +1,4 @@
-
-
 #include "main.hh"
-#include "pinocchio/parsers/urdf.hpp"
-#include "pinocchio/parsers/srdf.hpp"
 
 using namespace std ;
 namespace fs = boost::filesystem;
@@ -14,6 +10,12 @@ int main(int argc, char *argv[])
     path_t outputFile("");
     path_t robotUrdfPath("");
     getOptions(argc,argv,dataRootPath,robotRootPath,robotUrdfPath,outputFile);
+
+    // create a pionocchio model
+    se3::Model robotModel ;
+    se3::urdf::buildModel(robotUrdfPath.string(),
+                          se3::JointModelFreeFlyer(),
+                          robotModel);
 
     // create a motor model
     Motors HRP2motors (robotRootPath) ;
@@ -31,13 +33,18 @@ int main(int argc, char *argv[])
     // iterate over all the file "*_astate.log" and "*_rstate.log"
     result_set_t::iterator it_file_astate = (*files)[0].begin();
     result_set_t::iterator it_file_ref = (*files)[1].begin();
-    for (unsigned int i = 0 ; i < (*files)[0].size() ; ++i, ++it_file_astate, ++it_file_ref)
+    for (unsigned int i = 0 ; i < (*files)[0].size() ;
+         ++i, ++it_file_astate, ++it_file_ref)
     {
         // print the file currently analyzed
         cout << "file " << i <<  " " ;
         cout << it_file_astate->string() << endl ;
         // create an "Experience" object for each log
-        Experience tmp_Xp = Experience (&HRP2motors,*it_file_astate, *it_file_ref,dataRootPath);
+        Experience tmp_Xp = Experience (&HRP2motors,
+                                        &robotModel,
+                                        *it_file_astate,
+                                        *it_file_ref,
+                                        dataRootPath);
         // treat the data log
         tmp_Xp.handleData();
         // save the object in the "Xp" vector

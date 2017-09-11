@@ -2,11 +2,17 @@
 
 using namespace std ;
 
-Experience::Experience(Motors * hrp2motors, path_t input_state_path, path_t input_ref_path, path_t rootFolder)
+Experience::Experience(Motors * hrp2motors,
+           se3::Model * hrp2model,
+           path_t input_state_path,
+           path_t input_ref_path,
+           path_t rootFolder)
 {
     input_astate_path_ = input_state_path ;
     input_ref_path_ = input_ref_path ;
     hrp2motors_ = hrp2motors ;
+    robotModel_ = hrp2model ;
+    robotData_ = new se3::Data(*robotModel_);
 
     ddl_ = hrp2motors->gear_ratio_.size();
 
@@ -150,6 +156,7 @@ int Experience::readData()
     q_astate_.resize( N , vector<double>(ddl_,0) );
     dq_.resize( N , vector<double>(ddl_,0) ) ;
     torques_.resize( N , vector<double>(ddl_,0) ) ;
+    rnea_torques_.resize( N , vector<double>(ddl_,0) ) ;
 
     for (unsigned int i = 0 ; i < N ; ++i )
     {

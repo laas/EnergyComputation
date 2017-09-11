@@ -1,6 +1,6 @@
 #ifndef COMMONTOOLS_HH
 #define COMMONTOOLS_HH
-
+#include "pinocchio/parsers/urdf.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <sstream>
