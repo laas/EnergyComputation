@@ -65,17 +65,19 @@ int main(int argc, char *argv[])
                    EnergyOfMotors(J.m-1.s-1)\t\
                    EnergyOfWalking(J.m-1.s-1) \t\
                    CostOfTransport\t\
-                   MechaCostOfTransport\n" ;
+                   MechaCostOfTransport\t\
+                   FroudeNumber\n" ;
 
     for (unsigned int i = 0 ; i < Xp.size() ; ++i)
     {
-        dumpStream << Xp[i].name()            << "\t"
-                   << Xp[i].walkedDistanced() << "\t"
-                   << Xp[i].TimeTravelled()   << "\t"
-                   << Xp[i].EnergyOfWalking() << "\t"
-                   << Xp[i].EnergyOfMotor()   << "\t"
-                   << Xp[i].CostOfTransport() << "\t"
-                   << Xp[i].MechaCostOfTransport() << "\t"<< endl ;
+        dumpStream << Xp[i].name()                 << "\t"
+                   << Xp[i].walkedDistanced()      << "\t"
+                   << Xp[i].TimeTravelled()        << "\t"
+                   << Xp[i].EnergyOfWalking()      << "\t"
+                   << Xp[i].EnergyOfMotor()        << "\t"
+                   << Xp[i].CostOfTransport()      << "\t"
+                   << Xp[i].MechaCostOfTransport() << "\t"
+		   << Xp[i].FroudeNumber()         << "\t"<< endl ;
     }
     dumpStream.close();
     cout << "results dumped in " << outputFile.c_str() << endl;

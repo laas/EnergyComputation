@@ -27,7 +27,13 @@ Experience::Experience(Motors * hrp2motors,
     EnergyOfMotor_J_m_s_ = 0.0 ;
     EnergyOfWalking_J_m_s_ = 0.0 ;
     walkedDistanced_ = -1.0 ;
-    WeightOfRobot_ = 560 ;
+    MechaCostOfTransport_ = 0.0 ;
+    CostOfTransport_ = 0.0 ;
+    FroudeNumber_ = 0.0 ;
+
+    WeightOfRobot_ = 560 ; // N
+    LegLenght_ = 0.7 ; // m //TO BE VERIFIED
+    Gravity_ = 9.81 ;  // m.s-2
 
     titleRobotConfig_.clear() ;
 
@@ -335,6 +341,8 @@ int Experience::computeTheEnergy()
 
     MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
     CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
+    
+    FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
 
     return 0 ;
 }
