@@ -28,6 +28,10 @@ public: // methods
     {return EnergyOfWalking_J_m_s_ ;}
     double TimeTravelled()
     {return (0.005*(endData_-beginData_)) ;}
+    double CostOfTransport()
+    {return CostOfTransport_ ;}
+    double MechaCostOfTransport()
+    {return MechaCostOfTransport_ ;}
 
 private : // methods
     int setExperienceName(path_t rootFolder);
@@ -72,8 +76,12 @@ private : // attributes
     double walkedDistanced_ ;
     double EnergyOfMotor_J_m_s_ ;
     double EnergyOfWalking_J_m_s_ ;
+    double CostOfTransport_ ;
+    double MechaCostOfTransport_ ;
 
     InfiniteImpendanceFilter IIF ;
+
+    double WeightOfRobot_ ; //in Newton
 };
 
 #endif // EXPERIENCE_HH

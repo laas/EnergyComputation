@@ -27,6 +27,7 @@ Experience::Experience(Motors * hrp2motors,
     EnergyOfMotor_J_m_s_ = 0.0 ;
     EnergyOfWalking_J_m_s_ = 0.0 ;
     walkedDistanced_ = -1.0 ;
+    WeightOfRobot_ = 560 ;
 
     titleRobotConfig_.clear() ;
 
@@ -44,7 +45,7 @@ int Experience::setExperienceName(path_t rootFolder)
     string rootFolder_st = rootFolder.string();
     string input_path_st = input_astate_path_.string();
 
-    experienceName_ = input_path_st.replace(0,rootFolder_st.length()+1,"") ;
+    experienceName_ = input_path_st.replace(0,rootFolder_st.length(),"") ;
 
     string asate_log = "-astate.log" ;
     size_t found = experienceName_.find(asate_log);
@@ -66,7 +67,7 @@ int Experience::setExperienceName(path_t rootFolder)
     string astring = "gravles" ;
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
-        walkedDistanced_ = 1.4 ;
+        	walkedDistanced_ = 1.4 ;
 
     astring = "slipFloor" ;
     found = experienceName_.find(astring);
@@ -78,17 +79,17 @@ int Experience::setExperienceName(path_t rootFolder)
     if ( found != std::string::npos)
         walkedDistanced_ = 0.4149695915 ;
 
-    astring = "slopes" ;
+    astring = "slope" ;
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
         walkedDistanced_ = 1.4 ;
 
-    astring = "stairs" ;
+    astring = "10cm" ; //stairs 10cm up
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
         walkedDistanced_ = 0.9 ;
 
-    astring = "multicontact" ;
+    astring = "15cm" ; //stairs 15cm up multicontact
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
         walkedDistanced_ = 0.6 ;
@@ -97,6 +98,21 @@ int Experience::setExperienceName(path_t rootFolder)
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
         walkedDistanced_ = 1.4 ;
+
+    astring = "hwalk" ;
+    found = experienceName_.find(astring);
+    if ( found != std::string::npos)
+         walkedDistanced_ = 2.0 ; 
+
+    astring = "Beam" ;
+    found = experienceName_.find(astring);
+    if ( found != std::string::npos)
+        walkedDistanced_ = 3.2 ;
+
+    astring = "npg" ; // non linear PG with joystick
+    found = experienceName_.find(astring);
+    if ( found != std::string::npos)
+        walkedDistanced_ = 3.5 ; //approximately
 
     return 0 ;
 }
@@ -189,7 +205,6 @@ int Experience::readData()
 
     // compute the acceleration of the joints by finite differenziation
     derivation(dq_,ddq_);
-
     string dump = experienceName_+"_q.dat" ;
     dumpData( dump , q_ ) ;
     dump = experienceName_ + "_dq_.dat" ;
@@ -305,13 +320,21 @@ int Experience::computeTheEnergy()
 
     EnergyOfMotor_J_m_s_ = 0.0;
     EnergyOfWalking_J_m_s_ = 0.0;
+    double EnergyOfMotorDDL = 0.0;
+    double EnergyOfWalkingDDL = 0.0;
     for (unsigned int j = 0 ; j < ddl_ ; ++j )
     {
-        EnergyOfMotor_J_m_s_ += energyOfMotors.back()[j] ;
-        EnergyOfWalking_J_m_s_ += energyOfWalk.back()[j] ;
+        EnergyOfMotorDDL += energyOfMotors.back()[j] ;
+        EnergyOfWalkingDDL += energyOfWalk.back()[j] ;
     }
-    EnergyOfMotor_J_m_s_   = EnergyOfMotor_J_m_s_   /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
-    EnergyOfWalking_J_m_s_ = EnergyOfWalking_J_m_s_ /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
+
+    EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL   /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
+    EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL /walkedDistanced_  /(energyOfMotors.size()*0.005) ;
+
+    double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
+
+    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
+    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
 
     return 0 ;
 }
