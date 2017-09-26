@@ -66,7 +66,7 @@ int Motors::ComputeConstantForEnergy()
     R_K2.resize(joint_name_.size());
     for (unsigned int i = 0 ; i < R_K2.size() ; ++i)
     {
-        R_K2[i] = resistor_[i] * (torque_constant_[i]*torque_constant_[i]);
+        R_K2[i] = resistor_[i] / (torque_constant_[i]*torque_constant_[i]);
         //std::cout << R_K2[i]  << " " ;
     }
     //std::cout << std::endl;

@@ -3,6 +3,72 @@
 using namespace std ;
 namespace fs = boost::filesystem;
 
+void nice_dump(path_t outputFile, vector<Experience> & Xp)
+{
+  // open/create and output file
+  ofstream dumpStream ;
+  dumpStream.open(outputFile.c_str(),ofstream::out);
+  // save the important values extracted from the experiment
+  vector<string> names ;
+  names.push_back("ExperienceName "            );
+  names.push_back("WalkedDistance(m) "         );
+  names.push_back("DurationOfTheExperiment(s) ");
+  names.push_back("EnergyOfMotors(J.m-1.s-1) " );
+  names.push_back("EnergyOfWalking(J.m-1.s-1) ");
+  names.push_back("CostOfTransport "           );
+  names.push_back("MechaCostOfTransport "      );
+  names.push_back("FroudeNumber "              );
+  int maxwidth=names[0].size() ;
+  for (unsigned i=0 ; i<Xp.size() ; ++i)
+    {maxwidth = max<int>(maxwidth,Xp[i].name().size());}
+  maxwidth += 2 ;
+
+  dumpStream << std::left
+             << std::setw(maxwidth)
+             << std::setfill(' ')
+             << names[0] ;
+  for (unsigned i=1 ; i<names.size() ; ++i)
+  {
+    dumpStream << std::left
+               << std::setw(names[i].size())
+               << std::setfill(' ')
+               << names[i] ;
+  }
+  dumpStream << endl ;
+
+  for (unsigned int i = 0 ; i < Xp.size() ; ++i)
+  {
+      dumpStream << std::left << std::setw(maxwidth)
+                 << std::setfill(' ') << Xp[i].name()
+
+                 << std::left << std::setw(names[1].size())
+                 << std::setfill(' ') << Xp[i].walkedDistanced()
+
+                 << std::left << std::setw(names[2].size())
+                 << std::setfill(' ') << Xp[i].TimeTravelled()
+
+                 << std::left << std::setw(names[3].size())
+                 << std::setfill(' ') << Xp[i].EnergyOfWalking()
+
+                 << std::left << std::setw(names[4].size())
+                 << std::setfill(' ') << Xp[i].EnergyOfMotor()
+
+                 << std::left << std::setw(names[5].size())
+                 << std::setfill(' ') << Xp[i].CostOfTransport()
+
+                 << std::left << std::setw(names[6].size())
+                 << std::setfill(' ') << Xp[i].MechaCostOfTransport()
+
+                 << std::left << std::setw(names[7].size())
+                 << std::setfill(' ') << Xp[i].FroudeNumber()
+
+                 << endl ;
+  }
+  dumpStream.close();
+  cout << "results dumped in " << outputFile.c_str() << endl;
+  return ;
+}
+
 int main(int argc, char *argv[])
 {
     path_t dataRootPath("");
@@ -54,32 +120,6 @@ int main(int argc, char *argv[])
         // save the object in the "Xp" vector
         Xp.push_back(tmp_Xp);
     }
-
-    // open/create and output file
-    ofstream dumpStream ;
-    dumpStream.open(outputFile.c_str(),ofstream::out);
-    // save the important values extracted from the experiment
-    dumpStream << "ExperienceName\t\
-                   WalkedDistance(m)\t\
-                   DurationOfTheExperiment(s)\t\
-                   EnergyOfMotors(J.m-1.s-1)\t\
-                   EnergyOfWalking(J.m-1.s-1) \t\
-                   CostOfTransport\t\
-                   MechaCostOfTransport\t\
-                   FroudeNumber\n" ;
-
-    for (unsigned int i = 0 ; i < Xp.size() ; ++i)
-    {
-        dumpStream << Xp[i].name()                 << "\t"
-                   << Xp[i].walkedDistanced()      << "\t"
-                   << Xp[i].TimeTravelled()        << "\t"
-                   << Xp[i].EnergyOfWalking()      << "\t"
-                   << Xp[i].EnergyOfMotor()        << "\t"
-                   << Xp[i].CostOfTransport()      << "\t"
-                   << Xp[i].MechaCostOfTransport() << "\t"
-		   << Xp[i].FroudeNumber()         << "\t"<< endl ;
-    }
-    dumpStream.close();
-    cout << "results dumped in " << outputFile.c_str() << endl;
+    nice_dump(outputFile, Xp);
     return 0 ;
 }

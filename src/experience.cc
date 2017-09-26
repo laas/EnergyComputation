@@ -73,7 +73,7 @@ int Experience::setExperienceName(path_t rootFolder)
     string astring = "gravles" ;
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
-        	walkedDistanced_ = 1.4 ;
+          walkedDistanced_ = 1.4 ;
 
     astring = "slipFloor" ;
     found = experienceName_.find(astring);
@@ -108,7 +108,7 @@ int Experience::setExperienceName(path_t rootFolder)
     astring = "hwalk" ;
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
-         walkedDistanced_ = 2.0 ; 
+         walkedDistanced_ = 2.0 ;
 
     astring = "Beam" ;
     found = experienceName_.find(astring);
@@ -197,7 +197,7 @@ int Experience::readData()
         }
         for (unsigned int j = 40 ; j < 40+30 ; ++j )
         {
-            torques_[i][j-40] = data_astate_[i][j];
+            torques_[i][j-40] = data_astate_[i][j] / hrp2motors_->gear_ratio_[j-40];
         }
     }
     // Create a temporary vector q_motor
@@ -211,22 +211,24 @@ int Experience::readData()
 
     // compute the acceleration of the joints by finite differenziation
     derivation(dq_,ddq_);
-    string dump = experienceName_+"_q.dat" ;
-    dumpData( dump , q_ ) ;
-    dump = experienceName_ + "_dq_.dat" ;
-    dumpData( dump , dq_ ) ;
-    dump = experienceName_ + "_ddq_.dat" ;
-    dumpData( dump , ddq_ ) ;
-    dump = experienceName_ + "_torques_filter.dat" ;
-    dumpData( dump , torques_tmp ) ;
-    dump = experienceName_ + "_torques.dat" ;
-    dumpData( dump , torques_ ) ;
-    dump = experienceName_ + "_q_filter.dat" ;
-    dumpData( dump , q_tmp ) ;
-    dump = experienceName_ + "_q_ref.dat" ;
-    dumpData( dump , q_ref_ ) ;
-    dump = experienceName_ + "_q_astate.dat" ;
-    dumpData( dump , q_astate_ ) ;
+
+    // dump all the files
+//    string dump = experienceName_+"_q.dat" ;
+//    dumpData( dump , q_ ) ;
+//    dump = experienceName_ + "_dq_.dat" ;
+//    dumpData( dump , dq_ ) ;
+//    dump = experienceName_ + "_ddq_.dat" ;
+//    dumpData( dump , ddq_ ) ;
+//    dump = experienceName_ + "_torques_filter.dat" ;
+//    dumpData( dump , torques_tmp ) ;
+//    dump = experienceName_ + "_torques.dat" ;
+//    dumpData( dump , torques_ ) ;
+//    dump = experienceName_ + "_q_filter.dat" ;
+//    dumpData( dump , q_tmp ) ;
+//    dump = experienceName_ + "_q_ref.dat" ;
+//    dumpData( dump , q_ref_ ) ;
+//    dump = experienceName_ + "_q_astate.dat" ;
+//    dumpData( dump , q_astate_ ) ;
     return 0;
 }
 
@@ -341,7 +343,7 @@ int Experience::computeTheEnergy()
 
     MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
     CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
-    
+
     FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
 
     return 0 ;
