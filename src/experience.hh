@@ -57,6 +57,7 @@ private : // attributes
     std::vector< std::string > titleRobotConfig_ ;
     std::vector< std::vector<double> > data_astate_ ;
     std::vector< std::vector<double> > data_ref_ ;
+    bool ignore_ref_ ;
 
     // value computed from filtered signal
     // q_,dq_,ddq_ are evaluated as the motor rotation
@@ -85,7 +86,7 @@ private : // attributes
     InfiniteImpendanceFilter IIF ;
 
     double WeightOfRobot_ ; //in Newton
-    double LegLenght_ ; 
+    double LegLenght_ ;
     double Gravity_ ;
 };
 

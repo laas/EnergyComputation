@@ -43,6 +43,8 @@ Experience::Experience(Motors * hrp2motors,
     q_ref_.clear();
     q_astate_.clear();
 
+    ignore_ref_ = false ;
+
     setExperienceName(rootFolder);
 }
 
@@ -55,7 +57,7 @@ int Experience::setExperienceName(path_t rootFolder)
 
     string asate_log = "-astate.log" ;
     size_t found = experienceName_.find(asate_log);
-    experienceName_ = experienceName_.replace(found,asate_log.length()+1,"") ;
+    experienceName_ = experienceName_.replace(found,asate_log.length(),"") ;
 
     bool ok = true ;
     while(ok)
@@ -68,6 +70,10 @@ int Experience::setExperienceName(path_t rootFolder)
             ok = true ;
             experienceName_ = experienceName_.replace(found,1,"_") ;
         }
+    }
+    if(experienceName_.compare(0,1,"_")==0)
+    {
+      experienceName_.erase(0,1);
     }
 
     string astring = "gravles" ;
@@ -96,6 +102,16 @@ int Experience::setExperienceName(path_t rootFolder)
         walkedDistanced_ = 0.9 ;
 
     astring = "15cm" ; //stairs 15cm up multicontact
+    found = experienceName_.find(astring);
+    if ( found != std::string::npos)
+        walkedDistanced_ = 0.6 ;
+
+    astring = "ClimbingWithTools" ; //stairs 15cm up tools
+    found = experienceName_.find(astring);
+    if ( found != std::string::npos)
+        walkedDistanced_ = 0.9 ;
+
+    astring = "StepStairsDownSeq" ; // stairs 15cm
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
         walkedDistanced_ = 0.6 ;
@@ -173,6 +189,12 @@ int Experience::readData()
         data_ref_.push_back(oneLine);
     }
     dataStream.close();
+    if ( data_astate_.size() != data_ref_.size() )
+    {
+      ignore_ref_ = true ;
+      std::cout << "-rstate and -astate files does not have the same number of"
+                << " data" << std::endl;
+    }
 
     // save the data wanted in separated buffers for computation
     int N = data_astate_.size() ;
@@ -193,7 +215,8 @@ int Experience::readData()
         for (unsigned int j = 0 ; j < 30 ; ++j )
         {
             q_astate_[i][j] = data_astate_[i][j];
-            q_ref_[i][j] = data_ref_[i][j];
+            if(!ignore_ref_)
+              q_ref_[i][j] = data_ref_[i][j];
         }
         for (unsigned int j = 40 ; j < 40+30 ; ++j )
         {
@@ -285,15 +308,16 @@ int Experience::defineBeginEndIndexes()
     vector< vector<double> > tmp_q_ref = q_ref_ ;
     vector< vector<double> > tmp_q_astate = q_astate_ ;
 
-    q_ref_.resize(endData_-beginData_);
+    if(!ignore_ref_)
+      q_ref_.resize(endData_-beginData_);
     q_astate_.resize(endData_-beginData_);
     for(unsigned int k = 0 ; k < torques_.size() ; ++k)
     {
         torques_[k] = tmp_torques[k+beginData_] ;
         q_[k] = tmp_q[k+beginData_] ;
         dq_[k] = tmp_dq[k+beginData_] ;
-
-        q_ref_[k] = tmp_q_ref[k+beginData_] ;
+        if(!ignore_ref_)
+          q_ref_[k] = tmp_q_ref[k+beginData_] ;
         q_astate_[k] = tmp_q_astate[k+beginData_] ;
     }
     return 0 ;
@@ -351,6 +375,8 @@ int Experience::computeTheEnergy()
 
 int Experience::compareRefMeasure()
 {
+    if(ignore_ref_)
+      return 0 ;
     unsigned int N = q_ref_.size() ;
     errMeasureReference_.resize(N) ;
     for (unsigned int i = 0 ; i < N ; ++i)
