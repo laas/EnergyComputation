@@ -32,7 +32,7 @@ Experience::Experience(Motors * hrp2motors,
     FroudeNumber_ = 0.0 ;
 
     WeightOfRobot_ = 560 ; // N
-    LegLenght_ = 0.7 ; // m //TO BE VERIFIED
+    LegLenght_ = 0.605 ; // m //TO BE VERIFIED
     Gravity_ = 9.81 ;  // m.s-2
 
     titleRobotConfig_.clear() ;
@@ -134,7 +134,7 @@ int Experience::setExperienceName(path_t rootFolder)
     astring = "npg" ; // non linear PG with joystick
     found = experienceName_.find(astring);
     if ( found != std::string::npos)
-        walkedDistanced_ = 3.5 ; //approximately
+        walkedDistanced_ = 7.0 ; //approximately
 
     return 0 ;
 }

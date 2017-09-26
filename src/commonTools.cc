@@ -27,7 +27,8 @@ int derivation( const std::vector< std::vector<double> > & x,
 {
     double dt = 0.005 ;
     assert(x.size()!=0 && "No data to derive");
-    assert(x[0].size()!=0 && "Correct number of degree of freedom but no to derive");
+    assert(x[0].size()!=0 && "Correct number of degree of freedom but no data to derive");
+    dx .resize(x.size());
     unsigned rows = x.size();
     unsigned cols = x[0].size();
     for (unsigned int j = 0 ; j < cols ; ++j )
@@ -38,6 +39,26 @@ int derivation( const std::vector< std::vector<double> > & x,
         {
             dx[i][j] = (x[i][j] - x_1)/dt ;
             x_1=x[i][j];
+        }
+    }
+    return 0 ;
+}
+
+int integration( const std::vector< std::vector<double> > & dx,
+                std::vector< std::vector<double> > & x)
+{
+    double dt = 0.005 ;
+    assert(dx.size()!=0 && "No data to integrate");
+    assert(dx[0].size()!=0 && "Correct number of degree of freedom but no data to integrate");
+    unsigned rows = dx.size();
+    unsigned cols = dx[0].size();
+    x .resize(dx.size());
+    for (unsigned int j = 0 ; j < cols ; ++j )
+    {
+        x[0][j]=0.0;
+        for (unsigned int i = 1 ; i < rows ; ++i )
+        {
+            x[i][j] = x[i-1][j] + dx[i][j] * dt ;
         }
     }
     return 0 ;
