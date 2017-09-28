@@ -17,10 +17,11 @@ public:
     bool operator()(const path_t fullString)
     {
         std::string inputString = fullString.string() ;
-        int inLength = inputString.length() ;
+        int inputLength = inputString.length() ;
 
-        if (inLength >= endLength_) {
-            return (0 != inputString.compare (inLength - endLength_, endLength_, ending_));
+        if (inputLength >= endLength_) {
+            return (0 != inputString.compare(inputLength - endLength_,
+                                             endLength_, ending_));
         } else {
             return false;
         }
@@ -53,8 +54,8 @@ public:
     inline std::vector<result_set_t> * files ()
     {
         files_.clear();
-        files_.push_back(files_state_input_);
-        files_.push_back(files_ref_input_);
+        files_.push_back(input_astate_files_);
+        files_.push_back(input_rstate_files_);
         return &files_ ;
     }
 
@@ -64,9 +65,9 @@ private:
     int filterFiles();
 
 private:
-    result_set_t files_state_input_ ;
+    result_set_t input_astate_files_ ;
     result_set_t files_Output_ ;
-    result_set_t files_ref_input_ ;
+    result_set_t input_rstate_files_ ;
 
     std::vector<result_set_t> files_ ;
     Checker checker_ref ;

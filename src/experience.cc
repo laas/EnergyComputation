@@ -35,13 +35,18 @@ Experience::Experience(Motors * hrp2motors,
     LegLenght_ = 0.605 ; // m //TO BE VERIFIED
     Gravity_ = 9.81 ;  // m.s-2
 
-    titleRobotConfig_.clear() ;
+    titleRobotConfig_.clear();
 
     q_.clear() ;
     dq_.clear() ;
     torques_.clear() ;
     q_ref_.clear();
     q_astate_.clear();
+
+    avrg_joints_    .clear();
+    variance_joints_.clear();
+    fair_die_joints_.clear();
+    fall_fifo_      .clear();
 
     ignore_ref_ = false ;
 
@@ -146,55 +151,87 @@ int Experience::handleData()
     {
       return -1;
     }
+    if (compareRefMeasure() == -1)
+    {
+      return -1 ;
+    }
     computeTheEnergy();
-    compareRefMeasure();
+
     return 0 ;
+}
+
+int Experience::readFile(std::vector< std::vector<double> > & data,
+                          path_t file, int number_of_column)
+{
+  cout << "reading :" << file << endl ;
+  // clean the data
+  data.clear();
+  // open the file
+  std::ifstream dataStream ;
+  dataStream.open(file.c_str(),std::ifstream::in);
+  // reading all the data file
+  vector<double> oneLine ;
+  string line ;
+  double value ;
+  int count_line = 0 ;
+  while (getline(dataStream,line)){
+      ++count_line ;
+      if (line.find("%JA0 JA1 JA2 JA3 JA4 JA5 JA6 JA7")!= std::string::npos)
+      {
+//        cout << "found \"%JA0 JA1 JA2 JA3 JA4 JA5 JA6 JA7\", in line "
+//             << count_line << ", line ignored" << endl ;
+        line.clear();
+        continue ;
+      }
+      oneLine.clear();
+      istringstream line_stream(line);
+      while(line_stream >> value)
+      {
+          oneLine.push_back(value);
+      }
+//      if(oneLine.size() != number_of_column)
+//      {
+//        cout << "number of column " << oneLine.size()
+//             << " of line " << count_line
+//             << " is not standard. It should be " << number_of_column << endl ;
+//        continue ;
+//      }
+      data.push_back(oneLine);
+      line.clear();
+  }
+  // close the file
+  dataStream.close();
+
+  bool same_number_column = true;
+  for(unsigned row=0 ; row< data.size() ; ++row)
+  {
+    same_number_column &= (data[row].size() == number_of_column);
+    if (!same_number_column)
+    {
+//      cout << data[row].size() << " " << number_of_column << endl ;
+//      for (unsigned col=0 ; col<data[row].size() ; ++col)
+//        cout << "col " << col << " : " << data[row][col] << endl;
+      break ;
+      //assert (same_number_column);
+    }
+  }
+
 }
 
 int Experience::readData()
 {
-    data_astate_.clear() ;
-    std::string astateFile = input_astate_path_.string() ;
-    std::ifstream dataStream ;
-    dataStream.open(astateFile.c_str(),std::ifstream::in);
+    readFile(data_astate_,input_astate_path_,176);
+    readFile(data_ref_,input_ref_path_,100);
 
-    // skipping header
-    titleRobotConfig_.resize(166) ;
-    for (unsigned int i = 0 ; i < titleRobotConfig_.size() ; ++i)
-        dataStream >> titleRobotConfig_[i];
-
-    // reading all the data file
-    while (dataStream.good()) {
-        vector<double> oneLine(176) ;
-        for (unsigned int i = 0 ; i < oneLine.size() ; ++i)
-            dataStream >> oneLine[i];
-        data_astate_.push_back(oneLine);
-    }
-    dataStream.close();
-
-    data_ref_.clear() ;
-    std::string rstateFile = input_ref_path_.string() ;
-    dataStream.open(rstateFile.c_str(),std::ifstream::in);
-
-    // skipping header
-    titleRobotConfig_.resize(95) ;
-    for (unsigned int i = 0 ; i < titleRobotConfig_.size() ; ++i)
-        dataStream >> titleRobotConfig_[i];
-
-    // reading all the data file
-    while (dataStream.good()) {
-        vector<double> oneLine(100) ;
-        for (unsigned int i = 0 ; i < oneLine.size() ; ++i)
-            dataStream >> oneLine[i];
-        data_ref_.push_back(oneLine);
-    }
-    dataStream.close();
     if ( data_astate_.size() != data_ref_.size() )
     {
+      cout << "data_astate_.size():" << data_astate_.size()
+           << " ; data_ref_.size():" << data_ref_.size() << endl ;
       ignore_ref_ = true ;
       std::cout << "-rstate and -astate files does not have the same number of"
                 << " data" << std::endl;
     }
+    assert(data_astate_.size() == data_ref_.size());
 
     // save the data wanted in separated buffers for computation
     int N = data_astate_.size() ;
@@ -252,12 +289,15 @@ int Experience::readData()
 //    dumpData( dump , q_ref_ ) ;
 //    dump = experienceName_ + "_q_astate.dat" ;
 //    dumpData( dump , q_astate_ ) ;
+
+    data_astate_.clear();
+    data_ref_.clear();
     return 0;
 }
 
 int Experience::defineBeginEndIndexes()
 {
-    int N = data_astate_.size() ;
+    int N = dq_.size() ;
     unsigned int i = 0 ;
     bool found = false ;
     while ( !found && i < N )
@@ -295,7 +335,8 @@ int Experience::defineBeginEndIndexes()
         ++i;
     }
     endData_ = dq_.size()-1 ;
-    cout << beginData_ << " " << endData_ << endl ;
+    cout << "BeginDataIndex : " << beginData_
+         << " ; EndingDataIndex : " << endData_ << endl ;
 
     vector< vector<double> > tmp_torques = torques_ ;
     vector< vector<double> > tmp_q = q_ ;
@@ -339,16 +380,9 @@ int Experience::computeTheEnergy()
     }
 
     vector< vector<double> > energyOfMotors ( N , vector<double> (ddl_,0) );
+    integration(powerOutputMotors_,energyOfMotors);
     vector< vector<double> > energyOfWalk ( N , vector<double> (ddl_,0) );
-    double dt = 0.005 ;
-    for (unsigned int i = 1 ; i < energyOfMotors.size() ; ++i )
-    {
-        for (unsigned int j = 0 ; j < ddl_ ; ++j )
-        {
-            energyOfMotors[i][j] = energyOfMotors[i-1][j] + powerOutputMotors_[i][j]*dt ;
-            energyOfWalk[i][j] = energyOfWalk[i-1][j] + powerOfWalk_[i][j]*dt ;
-        }
-    }
+    integration(powerOfWalk_,energyOfWalk);
 
     EnergyOfMotor_J_m_s_ = 0.0;
     EnergyOfWalking_J_m_s_ = 0.0;
@@ -377,6 +411,7 @@ int Experience::compareRefMeasure()
 {
     if(ignore_ref_)
       return 0 ;
+
     unsigned int N = q_ref_.size() ;
     errMeasureReference_.resize(N) ;
     for (unsigned int i = 0 ; i < N ; ++i)
@@ -388,57 +423,83 @@ int Experience::compareRefMeasure()
     {
         for (unsigned int j = 0 ; j < ddl_ ; ++j)
         {
-            errMeasureReference_[i][j] = sqrt( (q_ref_[i][j]-q_astate_[i][j])*(q_ref_[i][j]-q_astate_[i][j]) );
+            errMeasureReference_[i][j] = sqrt( (q_ref_[i][j]-q_astate_[i][j])*
+                                               (q_ref_[i][j]-q_astate_[i][j]) );
         }
     }
 
-    vector<double> avrg_joints (ddl_,0.0);
+    avrg_joints_.resize(ddl_,0.0);
     for (unsigned int j = 0 ; j < ddl_ ; ++j)
     {
-        avrg_joints[j] = 0.0 ;
+        avrg_joints_[j] = 0.0 ;
         for (unsigned int i = 0 ; i < N ; ++i)
         {
-            avrg_joints[j] += errMeasureReference_[i][j] ;
+            avrg_joints_[j] += errMeasureReference_[i][j] ;
         }
-        avrg_joints[j] = avrg_joints[j] / N ;
+        avrg_joints_[j] = avrg_joints_[j] / N ;
     }
 
-    vector<double> variance_joints (ddl_,0.0);
+    variance_joints_.resize(ddl_,0.0);
     for (unsigned int j = 0 ; j < ddl_ ; ++j)
     {
-        variance_joints[j] = 0.0 ;
+        variance_joints_[j] = 0.0 ;
         for (unsigned int i = 0 ; i < N ; ++i)
         {
-            variance_joints[j] += (errMeasureReference_[i][j] - avrg_joints[j]) *
-                                  (errMeasureReference_[i][j] - avrg_joints[j]) ;
+            variance_joints_[j] += (errMeasureReference_[i][j] - avrg_joints_[j]) *
+                                  (errMeasureReference_[i][j] - avrg_joints_[j]) ;
         }
-        variance_joints[j] / N ;
+        variance_joints_[j] / N ;
     }
 
-    vector<double> fair_die_joints (ddl_,0.0);
+    fair_die_joints_.resize(ddl_,0.0);
     for (unsigned int j = 0 ; j < ddl_ ; ++j)
     {
-        fair_die_joints[j] = sqrt(variance_joints[j]) ;
+        fair_die_joints_[j] = sqrt(variance_joints_[j]) ;
     }
+    return detectFall() ;
+}
 
-//    cout << "average per joints :\n" ;
-//    for (unsigned int j = 0 ; j < ddl_ ; ++j)
-//    {
-//        cout << avrg_joints[j] << " " ;
-//    }
-//    cout << endl ;
+int Experience::detectFall()
+{
+  unsigned int N = q_ref_.size() ;
+  fall_fifo_.resize( (int)round(0.1/0.005) , vector<double>(ddl_,0.0) );
+  for (unsigned i=0 ; i<fall_fifo_.size()&i<errMeasureReference_.size() ; ++i )
+  {
+      for (unsigned int j = 0 ; j < ddl_ ; ++j)
+      {
+          fall_fifo_[i][j] = errMeasureReference_[i][j];
+      }
+  }
 
-//    cout << "variance per joints :\n" ;
-//    for (unsigned int j = 0 ; j < ddl_ ; ++j)
-//    {
-//        cout << variance_joints[j] << " " ;
-//    }
-//    cout << endl ;
+  cout << "err sum per ddl : " ;
+  double avrg_err_window = 0.0 ;
+  for(int n=0 ; n<N-fall_fifo_.size() ; ++n)
+  {
+    // update the fifo :
+    if(n!=0)
+    {
+      fall_fifo_.pop_front();
+      if(n+fall_fifo_.size()<=errMeasureReference_.size())
+      fall_fifo_.push_back(errMeasureReference_[n+fall_fifo_.size()-1]);
+    }
+    // compute the sum of the error per time and per ddl
+    double err_sum = 0.0 ;
+    for (unsigned i=0 ; i<fall_fifo_.size() ; ++i)
+      for (unsigned j=0 ; j<ddl_ ; ++j)
+        err_sum += fall_fifo_[i][j] ;
 
-//    cout << "fair die per joints :\n" ;
-//    for (unsigned int j = 0 ; j < ddl_ ; ++j)
-//    {
-//        cout << fair_die_joints[j] << " " ;
-//    }
-//    cout << endl ;
+    avrg_err_window = err_sum/(fall_fifo_.size()*ddl_) ;
+    if (avrg_err_window>0.021)
+    {
+      cout << "average err has increased to : " << avrg_err_window
+           << " between time=[" << n*0.005 << ", "
+           << (n+fall_fifo_.size())*0.005  << "]" << endl ;
+      cout << "##################################################################"
+           << endl ;
+      break ;
+    }
+    //assert(avrg_err_window<0.02);
+  }
+  cout << "final err sum = " << avrg_err_window << endl ;
+  return 0 ;
 }

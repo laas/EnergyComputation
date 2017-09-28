@@ -42,6 +42,8 @@ private : // methods
     int defineBeginEndIndexes();
     int computeTheEnergy();
     int compareRefMeasure();
+    int detectFall();
+    int readFile(std::vector< std::vector<double> > & data, path_t file, int number_of_column);
 
 private : // attributes
     path_t input_astate_path_ ;
@@ -54,7 +56,7 @@ private : // attributes
     Motors * hrp2motors_ ;
     //se3::Model * robotModel_ ;
     //se3::Data * robotData_ ;
-    std::vector< std::string > titleRobotConfig_ ;
+    std::string titleRobotConfig_ ;
     std::vector< std::vector<double> > data_astate_ ;
     std::vector< std::vector<double> > data_ref_ ;
     bool ignore_ref_ ;
@@ -71,6 +73,8 @@ private : // attributes
     // raw data
     std::vector< std::vector<double> > q_astate_ ;
     std::vector< std::vector<double> > q_ref_ ;
+    std::vector<double> avrg_joints_,variance_joints_,fair_die_joints_ ;
+    std::deque<std::vector<double> > fall_fifo_ ;
 
     std::vector< std::vector<double> > powerOutputMotors_ ;
     std::vector< std::vector<double> > powerOfWalk_ ;

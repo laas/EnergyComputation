@@ -10,10 +10,10 @@ ExploreFolder::ExploreFolder() : checker_ref("-rstate.log") , checker_state("-as
 
 int ExploreFolder::findLogInFolder(path_t & inputDir )
 {
-    if (!files_state_input_.empty())
-        files_state_input_.clear();
-    if (!files_ref_input_.empty())
-        files_ref_input_.clear();
+    if (!input_astate_files_.empty())
+        input_astate_files_.clear();
+    if (!input_rstate_files_.empty())
+        input_rstate_files_.clear();
     recursiveParcours(inputDir);
     filterFiles();
 }
@@ -33,8 +33,8 @@ int ExploreFolder::recursiveParcours(path_t & inputDir )
             }
             if (fs::is_regular_file(dir_iter->status()) )
             {
-                files_ref_input_.push_back(*dir_iter);
-                files_state_input_.push_back(*dir_iter);
+                input_rstate_files_.push_back(*dir_iter);
+                input_astate_files_.push_back(*dir_iter);
             }
         }
         return 1 ;
@@ -55,12 +55,32 @@ bool ExploreFolder::hasEnding (std::string const & fullString, std::string const
 
 int ExploreFolder::filterFiles()
 {
-    files_state_input_.remove_if( checker_state );
-    files_ref_input_.remove_if( checker_ref );
+    input_astate_files_.remove_if( checker_state );
+    input_rstate_files_.remove_if( checker_ref );
 
-    files_state_input_.sort(compare_nocase);
-    files_ref_input_.sort(compare_nocase);
+    input_astate_files_.sort(compare_nocase);
+    input_rstate_files_.sort(compare_nocase);
 
+    result_set_t as_files = input_astate_files_ ;
+    result_set_t rs_files = input_rstate_files_   ;
+    input_astate_files_.clear();
+    input_rstate_files_.clear();
+    string astate_end("-astate.log");
+    string rstate_end("-rstate.log");
+
+    for(result_set_t::iterator as =as_files.begin() ; as!=as_files.end() ; ++as)
+    {
+      std::string astate, rstate ;
+      astate = as->string().substr(0,as->string().size()-astate_end.size());
+      for(result_set_t::iterator rs =rs_files.begin() ; rs!=rs_files.end() ; ++rs)
+      {
+        rstate = rs->string().substr(0,rs->string().size()-rstate_end.size());
+        if (astate.compare(rstate)==0){
+          input_astate_files_.push_back(*as);
+          input_rstate_files_.push_back(*rs);
+        }
+      }
+    }
     return 0 ;
 }
 

@@ -13,7 +13,8 @@ typedef std::list<path_t> result_set_t;
 int lowpass(double x, double &y, double i, double a);
 int derivation(const std::vector<std::vector<double> > &x,
                std::vector<std::vector<double> > &dx);
-
+int integration( const std::vector< std::vector<double> > & dx,
+                std::vector< std::vector<double> > & x);
 int dumpData(std::string fileName, std::vector< std::vector<double> >& data);
 
 void getOptions(int argc,

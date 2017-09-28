@@ -103,8 +103,7 @@ int main(int argc, char *argv[])
          ++i, ++it_file_astate, ++it_file_ref)
     {
         // print the file currently analyzed
-        cout << "file " << i <<  " " ;
-        cout << it_file_astate->string() << endl ;
+        cout << "file " << i <<  " " << endl ;
         // create an "Experience" object for each log
         Experience tmp_Xp = Experience (&HRP2motors,
                                         //&robotModel,
@@ -119,6 +118,7 @@ int main(int argc, char *argv[])
         }
         // save the object in the "Xp" vector
         Xp.push_back(tmp_Xp);
+        //break;
     }
     nice_dump(outputFile, Xp);
     return 0 ;
