@@ -1,6 +1,9 @@
 #ifndef COMMONTOOLS_HH
 #define COMMONTOOLS_HH
-//#include "pinocchio/parsers/urdf.hpp"
+
+#ifdef PINOCCHIO
+#include "pinocchio/parsers/urdf.hpp"
+#endif
 #include <boost/filesystem.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <sstream>
@@ -20,7 +23,10 @@ int dumpData(std::string fileName, std::vector< std::vector<double> >& data);
 void getOptions(int argc,
                 char *argv[],
                 path_t &dataRootPath,
-                path_t &robotRootPath, //path_t &robotUrdfPath,
+                path_t &robotRootPath,
+#ifdef PINOCCHIO
+                path_t & robotUrdfPath,
+#endif
                 path_t &outputFile);
 
 

@@ -1,9 +1,12 @@
 #include "experience.hh"
+#include "pinocchio/algorithm/frames.hpp"
 
 using namespace std ;
 
 Experience::Experience(Motors * hrp2motors,
-                       //se3::Model * hrp2model,
+#ifdef PINOCCHIO
+                       se3::Model * hrp2model,
+#endif
                        path_t input_state_path,
                        path_t input_ref_path,
                        path_t rootFolder)
@@ -11,9 +14,12 @@ Experience::Experience(Motors * hrp2motors,
   input_astate_path_ = input_state_path ;
   input_ref_path_ = input_ref_path ;
   hrp2motors_ = hrp2motors ;
-  //    robotModel_ = hrp2model ;
-  //    robotData_ = new se3::Data(*robotModel_);
-
+#ifdef PINOCCHIO
+  robotModel_ = hrp2model ;
+  robotData_ = new se3::Data(*robotModel_);
+  q_odo_.resize(robotModel_->nq);
+  dq_odo_.resize(robotModel_->nq);
+#endif
   ddl_ = hrp2motors->gear_ratio_.size();
 
   beginData_ = 0 ;
@@ -53,6 +59,14 @@ Experience::Experience(Motors * hrp2motors,
   maxTrackingError_ = 0.0 ;
 
   setExperienceName(rootFolder);
+#ifdef PINOCCHIO
+  left_foot_wrench_ .clear();
+  right_foot_wrench_.clear();
+  left_hand_wrench_ .clear();
+  right_hand_wrench_.clear();
+  left_foot_isInContact_ .clear();
+  right_foot_isInContact_.clear();
+#endif
 }
 
 int Experience::setExperienceName(path_t rootFolder)
@@ -158,6 +172,9 @@ int Experience::handleData()
     has_fallen_ = true ;
 //    return -1 ;
   }
+#ifdef PINOCCHIO
+  odometrie();
+#endif
   computeTheEnergy();
 
   return 0 ;
@@ -238,30 +255,63 @@ int Experience::readData()
 
   // save the data wanted in separated buffers for computation
   int N = data_astate_.size() ;
-  q_.resize( N , vector<double>(ddl_,0) ) ;
-  q_ref_.resize( N , vector<double>(ddl_,0) ) ;
-  q_astate_.resize( N , vector<double>(ddl_,0) );
-  dq_.resize( N , vector<double>(ddl_,0) ) ;
-  ddq_.resize( N , vector<double>(ddl_,0) ) ;
-  torques_.resize( N , vector<double>(ddl_,0) ) ;
-  rnea_torques_.resize( N , vector<double>(ddl_,0) ) ;
-
+  q_                .resize( N , vector<double>(ddl_,0.0) ) ;
+  q_ref_            .resize( N , vector<double>(ddl_,0.0) ) ;
+  q_astate_         .resize( N , vector<double>(ddl_,0.0) );
+  dq_               .resize( N , vector<double>(ddl_,0.0) ) ;
+  ddq_              .resize( N , vector<double>(ddl_,0.0) ) ;
+  torques_          .resize( N , vector<double>(ddl_,0.0) ) ;
+  rnea_torques_     .resize( N , vector<double>(ddl_,0.0) ) ;
+#ifdef PINOCCHIO
+  left_foot_wrench_      .resize( N , vector<double>(6,0.0) ) ;
+  right_foot_wrench_     .resize( N , vector<double>(6,0.0) ) ;
+  left_hand_wrench_      .resize( N , vector<double>(6,0.0) ) ;
+  right_hand_wrench_     .resize( N , vector<double>(6,0.0) ) ;
+  left_foot_isInContact_ .resize( N , false) ;
+  right_foot_isInContact_.resize( N , false) ;
+#endif
   for (unsigned int i = 0 ; i < N ; ++i )
   {
-    for (unsigned int j = 0 ; j < 30 ; ++j )
+    int index=0 ;
+    for (unsigned int j = index ; j < index+30 ; ++j )
     {
-      q_[i][j] = hrp2motors_->gear_ratio_[j] * data_astate_[i][j];
+      q_[i][j-index] = hrp2motors_->gear_ratio_[j] * data_astate_[i][j];
     }
-    for (unsigned int j = 0 ; j < 30 ; ++j )
+    index=0;
+    for (unsigned int j = index ; j < index+30 ; ++j )
     {
-      q_astate_[i][j] = data_astate_[i][j];
+      q_astate_[i][j-index] = data_astate_[i][j];
       if(!ignore_ref_)
-        q_ref_[i][j] = data_ref_[i][j];
+        q_ref_[i][j-index] = data_ref_[i][j];
     }
-    for (unsigned int j = 40 ; j < 40+30 ; ++j )
+    index=40;
+    for (unsigned int j = index ; j < index+30 ; ++j )
     {
-      torques_[i][j-40] = data_astate_[i][j] / hrp2motors_->gear_ratio_[j-40];
+      torques_[i][j-index] =
+          data_astate_[i][j] / hrp2motors_->gear_ratio_[j-index];
     }
+#ifdef PINOCCHIO
+    index=120+0*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      left_foot_wrench_[i][j-index] = data_astate_[i][j];
+    }
+    index=120+1*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      right_foot_wrench_[i][j-index] = data_astate_[i][j];
+    }
+    index=120+2*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      left_hand_wrench_[i][j-index] = data_astate_[i][j];
+    }
+    index=120+3*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      right_hand_wrench_[i][j-index] = data_astate_[i][j];
+    }
+#endif
   }
   // Create a temporary vector q_motor
   std::vector< std::vector<double> > q_tmp = q_ ;
@@ -506,7 +556,7 @@ int Experience::detectFall()
     //assert(avrg_err_window<0.024);
   }
 
-  if (maxTrackingError_>0.01)
+  if (maxTrackingError_>0.007)
   {
 //    cout << "max_error = " << max_error
 //         << " between time=[" << time_max_error << ", "
@@ -521,4 +571,36 @@ int Experience::detectFall()
 //  cout << "final max err = " << max_error << endl ;
 //  cout << "return = " << ret << endl ;
   return ret ;
+}
+
+int Experience::odometrie()
+{
+  unsigned int N = q_ref_.size() ;
+  // detect if foot is in contact :
+  for (unsigned i=0 ; i<N ;++i)
+  {
+    left_foot_isInContact_ [i] = left_foot_wrench_ [i][2] > 30 ; // Fz > 30 N
+    right_foot_isInContact_[i] = right_foot_wrench_[i][2] > 30 ; // Fz > 30 N
+  }
+  // reset config vectors
+  q_odo_.setZero();
+  q_odo_(6)=1.0;
+  dq_odo_.setZero();
+  jac_lf_.setZero();
+  jac_rf_.setZero();
+  // compute init config
+  for (unsigned i=0 ; i<ddl_ ; ++i)
+    q_odo_(7+i) = q_[0][i] ;
+  se3::computeJacobians(*robotModel_,*robotData_,q_odo_) ;
+  se3::FrameIndex lf_id = robotModel_->getFrameId("l_ankle");
+  se3::FrameIndex rf_id = robotModel_->getFrameId("r_ankle");
+  Eigen::Vector3d angle2foot_translation ;
+  angle2foot_translation << 0.0, 0.0, -0.105 ;
+  se3::SE3 ankle2foot ; ankle2foot.translation(angle2foot_translation);
+  se3::getFrameJacobian(robotModel_,robotData_,lf_id,jac_lf_);
+  se3::getFrameJacobian(robotModel_,robotData_,rf_id,jac_rf_);
+
+
+
+  return 0;
 }

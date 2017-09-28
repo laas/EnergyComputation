@@ -9,7 +9,9 @@ class Experience
 {
 public: // methods
   Experience(Motors * hrp2motors,
-             //se3::Model * hrp2model,
+#ifdef PINOCCHIO
+             se3::Model * hrp2model,
+#endif
              path_t input_state_path,
              path_t input_ref_path,
              path_t rootFolder);
@@ -44,6 +46,7 @@ private : // methods
   int readData();
   int filterTheData();
   int defineBeginEndIndexes();
+  int odometrie();
   int computeTheEnergy();
   int compareRefMeasure();
   int detectFall();
@@ -60,8 +63,6 @@ private : // attributes
   int endData_ ;
   unsigned int ddl_ ;
   Motors * hrp2motors_ ;
-  //se3::Model * robotModel_ ;
-  //se3::Data * robotData_ ;
   std::string titleRobotConfig_ ;
   std::vector< std::vector<double> > data_astate_ ;
   std::vector< std::vector<double> > data_ref_ ;
@@ -100,6 +101,18 @@ private : // attributes
   double WeightOfRobot_ ; //in Newton
   double LegLenght_ ;
   double Gravity_ ;
+
+#ifdef PINOCCHIO
+  // for odometrie
+  se3::Model * robotModel_ ;
+  se3::Data * robotData_ ;
+  std::vector< std::vector<double> > left_foot_wrench_ , right_foot_wrench_,
+                                     left_hand_wrench_ , right_hand_wrench_;
+  std::vector< bool > left_foot_isInContact_ ,
+                      right_foot_isInContact_ ;
+  Eigen::VectorXd q_odo_,dq_odo_ ;
+  Eigen::Matrix<double,6,-1> jac_lf_,jac_rf_ ;
+#endif
 };
 
 #endif // EXPERIENCE_HH
