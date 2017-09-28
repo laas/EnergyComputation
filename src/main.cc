@@ -13,6 +13,7 @@ void nice_dump(path_t outputFile, vector<Experience> & Xp)
   names.push_back("ExperienceName "            );
   names.push_back("WalkedDistance(m) "         );
   names.push_back("has fallen? "               );
+  names.push_back("MaxTrackingError(rad)"      );
   names.push_back("DurationOfTheExperiment(s) ");
   names.push_back("EnergyOfMotors(J.m-1.s-1) " );
   names.push_back("EnergyOfWalking(J.m-1.s-1) ");
@@ -51,6 +52,10 @@ void nice_dump(path_t outputFile, vector<Experience> & Xp)
     dumpStream
         << std::left << std::setw(names[index].size())
         << std::setfill(' ') << Xp[i].hasFallen();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].maxTrackingError();
     ++index ;
     dumpStream
         << std::left << std::setw(names[index].size())

@@ -50,6 +50,7 @@ Experience::Experience(Motors * hrp2motors,
 
   ignore_ref_ = false ;
   has_fallen_ = false ;
+  maxTrackingError_ = 0.0 ;
 
   setExperienceName(rootFolder);
 }
@@ -467,7 +468,7 @@ int Experience::compareRefMeasure()
 int Experience::detectFall()
 {
   int ret = 0 ;
-  double max_error = 0.0 ;
+  maxTrackingError_ = 0.0 ;
   double time_max_error = 0.0 ;
   unsigned int N = q_ref_.size() ;
   fall_fifo_.resize( (int)round(0.1/0.005) , vector<double>(ddl_,0.0) );
@@ -497,15 +498,15 @@ int Experience::detectFall()
         err_sum += fall_fifo_[i][j] ;
 
     avrg_err_window = err_sum/(fall_fifo_.size()*ddl_) ;
-    if (max_error < avrg_err_window)
+    if (maxTrackingError_ < avrg_err_window)
     {
-      max_error = avrg_err_window ;
+      maxTrackingError_ = avrg_err_window ;
       time_max_error = (beginData_+n)*0.005 ;
     }
     //assert(avrg_err_window<0.024);
   }
 
-  if (max_error>0.025)
+  if (maxTrackingError_>0.01)
   {
 //    cout << "max_error = " << max_error
 //         << " between time=[" << time_max_error << ", "

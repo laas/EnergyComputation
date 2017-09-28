@@ -36,6 +36,8 @@ public: // methods
   {return FroudeNumber_;}
   std::string hasFallen()
   {return has_fallen_==true ? "true":"false" ;}
+  double maxTrackingError()
+  {return maxTrackingError_;}
 
 private : // methods
   int setExperienceName(path_t rootFolder);
@@ -84,6 +86,7 @@ private : // attributes
   std::vector< std::vector<double> > powerOutputMotors_ ;
   std::vector< std::vector<double> > powerOfWalk_ ;
   std::vector< std::vector<double> > errMeasureReference_ ;
+  double maxTrackingError_ ;
 
   double walkedDistanced_ ;
   double EnergyOfMotor_J_m_s_ ;
