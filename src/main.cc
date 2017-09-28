@@ -12,6 +12,7 @@ void nice_dump(path_t outputFile, vector<Experience> & Xp)
   vector<string> names ;
   names.push_back("ExperienceName "            );
   names.push_back("WalkedDistance(m) "         );
+  names.push_back("has fallen? "               );
   names.push_back("DurationOfTheExperiment(s) ");
   names.push_back("EnergyOfMotors(J.m-1.s-1) " );
   names.push_back("EnergyOfWalking(J.m-1.s-1) ");
@@ -38,30 +39,44 @@ void nice_dump(path_t outputFile, vector<Experience> & Xp)
 
   for (unsigned int i = 0 ; i < Xp.size() ; ++i)
   {
-    dumpStream << std::left << std::setw(maxwidth)
-               << std::setfill(' ') << Xp[i].name()
-
-               << std::left << std::setw(names[1].size())
-        << std::setfill(' ') << Xp[i].walkedDistanced()
-
-        << std::left << std::setw(names[2].size())
-        << std::setfill(' ') << Xp[i].TimeTravelled()
-
-        << std::left << std::setw(names[3].size())
-        << std::setfill(' ') << Xp[i].EnergyOfWalking()
-
-        << std::left << std::setw(names[4].size())
-        << std::setfill(' ') << Xp[i].EnergyOfMotor()
-
-        << std::left << std::setw(names[5].size())
-        << std::setfill(' ') << Xp[i].CostOfTransport()
-
-        << std::left << std::setw(names[6].size())
-        << std::setfill(' ') << Xp[i].MechaCostOfTransport()
-
-        << std::left << std::setw(names[7].size())
-        << std::setfill(' ') << Xp[i].FroudeNumber()
-
+    unsigned index=0;
+    dumpStream
+        << std::left << std::setw(maxwidth)
+        << std::setfill(' ') << Xp[i].name();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].walkedDistanced();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].hasFallen();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].TimeTravelled();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].EnergyOfWalking();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].EnergyOfMotor();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].CostOfTransport();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].MechaCostOfTransport();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].FroudeNumber();
+    ++index ;
+    dumpStream
         << endl ;
   }
   dumpStream.close();

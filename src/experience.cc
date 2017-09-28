@@ -49,6 +49,7 @@ Experience::Experience(Motors * hrp2motors,
   fall_fifo_      .clear();
 
   ignore_ref_ = false ;
+  has_fallen_ = false ;
 
   setExperienceName(rootFolder);
 }
@@ -153,7 +154,8 @@ int Experience::handleData()
   }
   if (compareRefMeasure() == -1)
   {
-    return -1 ;
+    has_fallen_ = true ;
+//    return -1 ;
   }
   computeTheEnergy();
 
@@ -464,6 +466,9 @@ int Experience::compareRefMeasure()
 
 int Experience::detectFall()
 {
+  int ret = 0 ;
+  double max_error = 0.0 ;
+  double time_max_error = 0.0 ;
   unsigned int N = q_ref_.size() ;
   fall_fifo_.resize( (int)round(0.1/0.005) , vector<double>(ddl_,0.0) );
   for (unsigned i=0 ; i<fall_fifo_.size()&i<errMeasureReference_.size() ; ++i )
@@ -474,7 +479,7 @@ int Experience::detectFall()
     }
   }
 
-  cout << "err sum per ddl : " ;
+//  cout << "err sum per ddl : " ;
   double avrg_err_window = 0.0 ;
   for(int n=0 ; n<N-fall_fifo_.size() ; ++n)
   {
@@ -492,17 +497,27 @@ int Experience::detectFall()
         err_sum += fall_fifo_[i][j] ;
 
     avrg_err_window = err_sum/(fall_fifo_.size()*ddl_) ;
-    if (avrg_err_window>0.021)
+    if (max_error < avrg_err_window)
     {
-      cout << "average err has increased to : " << avrg_err_window
-           << " between time=[" << n*0.005 << ", "
-           << (n+fall_fifo_.size())*0.005  << "]" << endl ;
-      cout << "##################################################################"
-           << endl ;
-      break ;
+      max_error = avrg_err_window ;
+      time_max_error = (beginData_+n)*0.005 ;
     }
-    //assert(avrg_err_window<0.02);
+    //assert(avrg_err_window<0.024);
   }
-  cout << "final err sum = " << avrg_err_window << endl ;
-  return 0 ;
+
+  if (max_error>0.025)
+  {
+//    cout << "max_error = " << max_error
+//         << " between time=[" << time_max_error << ", "
+//         << time_max_error + fall_fifo_.size()*0.005  << "]" << endl ;
+//    cout << "################################################################"
+//         << "################################################################"
+//         << endl ;
+    ret = -1 ;
+    //break ;
+  }
+//  cout << "final err sum = " << avrg_err_window << endl ;
+//  cout << "final max err = " << max_error << endl ;
+//  cout << "return = " << ret << endl ;
+  return ret ;
 }

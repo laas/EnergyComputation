@@ -34,6 +34,8 @@ public: // methods
   {return MechaCostOfTransport_ ;}
   double FroudeNumber()
   {return FroudeNumber_;}
+  std::string hasFallen()
+  {return has_fallen_==true ? "true":"false" ;}
 
 private : // methods
   int setExperienceName(path_t rootFolder);
@@ -62,6 +64,7 @@ private : // attributes
   std::vector< std::vector<double> > data_astate_ ;
   std::vector< std::vector<double> > data_ref_ ;
   bool ignore_ref_ ;
+  bool has_fallen_ ;
 
   // value computed from filtered signal
   // q_,dq_,ddq_ are evaluated as the motor rotation
