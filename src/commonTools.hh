@@ -14,7 +14,7 @@ int lowpass(double x, double &y, double i, double a);
 int derivation(const std::vector<std::vector<double> > &x,
                std::vector<std::vector<double> > &dx);
 int integration( const std::vector< std::vector<double> > & dx,
-                std::vector< std::vector<double> > & x);
+                 std::vector< std::vector<double> > & x);
 int dumpData(std::string fileName, std::vector< std::vector<double> >& data);
 
 void getOptions(int argc,
@@ -39,10 +39,10 @@ public :
     n = (int)floor(T/m_SamplingPeriod);
     m_filterWindow.resize(n+1);
     for(int i=0;i<n+1;i++)
-      {
-        tmp =sin((M_PI*i)/n);
-        m_filterWindow[i]=tmp*tmp;
-      }
+    {
+      tmp =sin((M_PI*i)/n);
+      m_filterWindow[i]=tmp*tmp;
+    }
 
     for(int i=0;i<n+1;i++)
       sum+= m_filterWindow[i];

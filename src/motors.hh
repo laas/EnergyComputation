@@ -12,22 +12,22 @@
 class Motors
 {
 public:
-    Motors(path_t robotFile);
+  Motors(path_t robotFile);
 
-    int readData(path_t robotFile);
+  int readData(path_t robotFile);
 
-    int DisplayJointI(int i);
-    int DisplayAll();
-    int ComputeConstantForEnergy();
+  int DisplayJointI(int i);
+  int DisplayAll();
+  int ComputeConstantForEnergy();
 
 private:
-    std::vector<std::string> titleRobotConfig_ ;
-    std::vector<double> torque_constant_ ;
-    std::vector<double> resistor_ ;
+  std::vector<std::string> titleRobotConfig_ ;
+  std::vector<double> torque_constant_ ;
+  std::vector<double> resistor_ ;
 public:
-    std::vector<double> R_K2 ; // R/Kc^2 * tau^2
-    std::vector<std::string> joint_name_;
-    std::vector<double> gear_ratio_;
+  std::vector<double> R_K2 ; // R/Kc^2 * tau^2
+  std::vector<std::string> joint_name_;
+  std::vector<double> gear_ratio_;
 };
 
 #endif // MOTORS_HH

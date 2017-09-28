@@ -8,70 +8,70 @@ bool compare_nocase (const path_t& first_path, const path_t& second_path);
 class Checker {
 public:
 
-    Checker(std::string name)
-    {
-        ending_ = name ;
-        endLength_ = ending_.length() ;
-    }
+  Checker(std::string name)
+  {
+    ending_ = name ;
+    endLength_ = ending_.length() ;
+  }
 
-    bool operator()(const path_t fullString)
-    {
-        std::string inputString = fullString.string() ;
-        int inputLength = inputString.length() ;
+  bool operator()(const path_t fullString)
+  {
+    std::string inputString = fullString.string() ;
+    int inputLength = inputString.length() ;
 
-        if (inputLength >= endLength_) {
-            return (0 != inputString.compare(inputLength - endLength_,
-                                             endLength_, ending_));
-        } else {
-            return false;
-        }
+    if (inputLength >= endLength_) {
+      return (0 != inputString.compare(inputLength - endLength_,
+                                       endLength_, ending_));
+    } else {
+      return false;
     }
+  }
 
-    void setEnding(std::string a_end)
-    {
-       ending_ = a_end ;
-       endLength_ = ending_.length() ;
-    }
+  void setEnding(std::string a_end)
+  {
+    ending_ = a_end ;
+    endLength_ = ending_.length() ;
+  }
 
 private :
-    std::string ending_ ;
-    int endLength_ ;
+  std::string ending_ ;
+  int endLength_ ;
 };
 
 class ExploreFolder
 {
 public:
-    ExploreFolder();
+  ExploreFolder();
 
-    // explore a folder to get the names of the files recursively
-    int findLogInFolder(path_t & inputDir) ;
+  // explore a folder to get the names of the files recursively
+  int findLogInFolder(path_t & inputDir) ;
 
-    // check if the file is the file is a OpenHRP _astate.log file
-    inline bool is_not_astate_log (const path_t & input_path)
-        { return ExploreFolder::hasEnding (input_path.string(), "-astate.log"); }
+  // check if the file is the file is a OpenHRP _astate.log file
+  inline bool is_not_astate_log (const path_t & input_path)
+  { return ExploreFolder::hasEnding (input_path.string(), "-astate.log"); }
 
-    // getter
-    inline std::vector<result_set_t> * files ()
-    {
-        files_.clear();
-        files_.push_back(input_astate_files_);
-        files_.push_back(input_rstate_files_);
-        return &files_ ;
-    }
-
-private:
-    int recursiveParcours(path_t & inputDir) ;
-    bool hasEnding (std::string const &fullString, std::string const &ending);
-    int filterFiles();
+  // getter
+  inline std::vector<result_set_t> * files ()
+  {
+    files_.clear();
+    files_.push_back(input_astate_files_);
+    files_.push_back(input_rstate_files_);
+    return &files_ ;
+  }
 
 private:
-    result_set_t input_astate_files_ ;
-    result_set_t files_Output_ ;
-    result_set_t input_rstate_files_ ;
+  int recursiveParcours(path_t & inputDir) ;
+  bool hasEnding (std::string const &fullString, std::string const &ending);
+  int filterFiles();
 
-    std::vector<result_set_t> files_ ;
-    Checker checker_ref ;
-    Checker checker_state ;
+private:
+  result_set_t input_astate_files_ ;
+  result_set_t files_Output_ ;
+  result_set_t input_rstate_files_ ;
+
+  std::vector<result_set_t> files_ ;
+  Checker checker_ref ;
+  Checker checker_state ;
 
 };
 
