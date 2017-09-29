@@ -111,7 +111,7 @@ private : // attributes
   std::vector< bool > left_foot_isInContact_ ,
                       right_foot_isInContact_ ;
   Eigen::VectorXd q_odo_,dq_odo_ ;
-  Eigen::Matrix<double,6,-1> jac_lf_,jac_rf_ ;
+  se3::Data::Matrix6x jac_lf_,jac_rf_ ;
 #endif
 };
 

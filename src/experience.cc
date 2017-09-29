@@ -572,7 +572,7 @@ int Experience::detectFall()
 //  cout << "return = " << ret << endl ;
   return ret ;
 }
-
+#ifdef PINOCCHIO
 int Experience::odometrie()
 {
   unsigned int N = q_ref_.size() ;
@@ -592,15 +592,16 @@ int Experience::odometrie()
   for (unsigned i=0 ; i<ddl_ ; ++i)
     q_odo_(7+i) = q_[0][i] ;
   se3::computeJacobians(*robotModel_,*robotData_,q_odo_) ;
-  se3::FrameIndex lf_id = robotModel_->getFrameId("l_ankle");
-  se3::FrameIndex rf_id = robotModel_->getFrameId("r_ankle");
+  se3::Model::FrameIndex lf_id = robotModel_->getFrameId("l_ankle");
+  se3::Model::FrameIndex rf_id = robotModel_->getFrameId("r_ankle");
   Eigen::Vector3d angle2foot_translation ;
   angle2foot_translation << 0.0, 0.0, -0.105 ;
   se3::SE3 ankle2foot ; ankle2foot.translation(angle2foot_translation);
-  se3::getFrameJacobian(robotModel_,robotData_,lf_id,jac_lf_);
-  se3::getFrameJacobian(robotModel_,robotData_,rf_id,jac_rf_);
-
+  se3::getFrameJacobian<false>(*robotModel_,*robotData_,lf_id,jac_lf_);
+  se3::getFrameJacobian<false>(*robotModel_,*robotData_,rf_id,jac_rf_);
+  Eigen::Matrix<double,6,1> world_v_lf ,world_v_rf;
 
 
   return 0;
 }
+#endif
