@@ -1,5 +1,6 @@
 #include "experience.hh"
 #include "pinocchio/algorithm/frames.hpp"
+#include "pinocchio/multibody/liegroup/operation-base.hpp"
 
 using namespace std ;
 
@@ -583,23 +584,46 @@ int Experience::odometrie()
     right_foot_isInContact_[i] = right_foot_wrench_[i][2] > 30 ; // Fz > 30 N
   }
   // reset config vectors
-  q_odo_.setZero();
-  q_odo_(6)=1.0;
-  dq_odo_.setZero();
-  jac_lf_.setZero();
-  jac_rf_.setZero();
-  // compute init config
-  for (unsigned i=0 ; i<ddl_ ; ++i)
-    q_odo_(7+i) = q_[0][i] ;
-  se3::computeJacobians(*robotModel_,*robotData_,q_odo_) ;
+  world_M_base_.resize(N);
+  q_odo_.setZero();  jac_lf_.setZero();
+  dq_odo_.setZero(); jac_rf_.setZero();
+  // setup some constants
   se3::Model::FrameIndex lf_id = robotModel_->getFrameId("l_ankle");
   se3::Model::FrameIndex rf_id = robotModel_->getFrameId("r_ankle");
-  Eigen::Vector3d angle2foot_translation ;
-  angle2foot_translation << 0.0, 0.0, -0.105 ;
-  se3::SE3 ankle2foot ; ankle2foot.translation(angle2foot_translation);
-  se3::getFrameJacobian<false>(*robotModel_,*robotData_,lf_id,jac_lf_);
-  se3::getFrameJacobian<false>(*robotModel_,*robotData_,rf_id,jac_rf_);
-  Eigen::Matrix<double,6,1> world_v_lf ,world_v_rf;
+  Eigen::Matrix<double,6,1>
+      world_v_lf_base, world_v_rf_base, world_v_base ;
+  double fz_rf = 0.0 ;
+  double fz_lf = 0.0 ;
+  world_M_base_[0] = se3::SE3::Identity() ;
+  // compute the velocity of the fett on the base frame
+  for(unsigned i=1 ; i<N ; ++i)
+  {
+    // update the configuration
+    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
+      q_odo_(7+ddl) = q_[i][ddl] ;
+    q_odo_.head<3>() = world_M_base_[i-1].translation();
+    q_odo_.segment<4>(3) =
+        Eigen::Quaternion<double>(world_M_base_[i-1].rotation()).coeffs() ;
+    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
+      dq_odo_(6+ddl) = dq_[i][ddl] ;
+    dq_odo_.head<6>() = world_v_base ;
+    fz_rf = right_foot_wrench_[i][2] ;
+    fz_lf = right_foot_wrench_[i][2] ;
+    // compute the jacobians
+    se3::computeJacobians(*robotModel_,*robotData_,q_odo_) ;
+    se3::getFrameJacobian<false>(*robotModel_,*robotData_,lf_id,jac_lf_);
+    se3::getFrameJacobian<false>(*robotModel_,*robotData_,rf_id,jac_rf_);
+    // comput the velocity of the feet relatif to the base
+    world_v_lf_base = world_v_base - jac_lf_ * dq_odo_ ;
+    world_v_rf_base = world_v_base - jac_rf_ * dq_odo_ ;
+    world_v_base =
+        (world_v_lf_base * fz_lf + world_v_rf_base * fz_rf) / (fz_rf + fz_lf) ;
+    Eigen::VectorXd world_M_base_vec; world_M_base_vec.resize(7) ;
+    world_M_base_vec.head<3>() = world_M_base_[i-1].translation();
+    world_M_base_vec.tail<4>() =
+        Eigen::Quaternion<double>(world_M_base_[i-1].rotation()).coeffs() ;
+    se3::JointModelFreeFlyer::integrate(world_M_base_vec,world_v_base*0.005);
+  }
 
 
   return 0;

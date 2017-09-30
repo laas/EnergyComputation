@@ -108,6 +108,7 @@ private : // attributes
   se3::Data * robotData_ ;
   std::vector< std::vector<double> > left_foot_wrench_ , right_foot_wrench_,
                                      left_hand_wrench_ , right_hand_wrench_;
+  std::vector< se3::SE3 > world_M_base_ ;
   std::vector< bool > left_foot_isInContact_ ,
                       right_foot_isInContact_ ;
   Eigen::VectorXd q_odo_,dq_odo_ ;
