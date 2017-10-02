@@ -1,6 +1,7 @@
 #include "explorefolder.hh"
 #include "motors.hh"
 #include "commonTools.hh"
+#include<Eigen/StdVector>
 
 #ifndef EXPERIENCE_HH
 #define EXPERIENCE_HH
@@ -44,7 +45,6 @@ public: // methods
 private : // methods
   int setExperienceName(path_t rootFolder);
   int readData();
-  int filterTheData();
   int defineBeginEndIndexes();
   int odometrie();
   int computeTheEnergy();
@@ -109,11 +109,16 @@ private : // attributes
   std::vector< std::vector<double> > left_foot_wrench_ , right_foot_wrench_,
                                      left_hand_wrench_ , right_hand_wrench_;
   std::vector< se3::SE3 > world_M_base_ ;
+  std::vector<
+               Eigen::Matrix<double,6,1>,
+               Eigen::aligned_allocator<Eigen::Matrix<double,6,1> >
+             > world_V_base_ , world_V_base_filtered_ ;
   std::vector< bool > left_foot_isInContact_ ,
                       right_foot_isInContact_ ;
   Eigen::VectorXd q_odo_,dq_odo_ ;
   se3::Data::Matrix6x jac_lf_,jac_rf_ ;
 #endif
+  dumpData dump_ ;
 };
 
 #endif // EXPERIENCE_HH

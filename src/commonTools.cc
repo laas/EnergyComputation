@@ -66,7 +66,7 @@ int integration( const std::vector< std::vector<double> > & dx,
   return 0 ;
 }
 
-int dumpData(string fileName, vector< vector<double> >& data)
+int dumpData::dump(string &fileName, vector< vector<double> >& data)
 {
   ofstream dumpStream ;
   dumpStream.open(fileName.c_str(),ofstream::out);
@@ -77,6 +77,50 @@ int dumpData(string fileName, vector< vector<double> >& data)
     {
       dumpStream << data[i][j] << " " ;
     }
+    dumpStream << endl ;
+  }
+  dumpStream.close();
+  cout << "dumped" << endl;
+  return 0 ;
+}
+
+int dumpData::dump(string &fileName, vector< se3::SE3 >& data)
+{
+  ofstream dumpStream ;
+  dumpStream.open(fileName.c_str(),ofstream::out);
+  int N = data.size()-1;
+  for (unsigned int i = 0 ; i < N ; ++i)
+  {
+    this->dump(dumpStream,data[i].translation());
+    this->dump(dumpStream,data[i].rotation());
+    dumpStream << endl ;
+  }
+  dumpStream.close();
+  cout << "dumped" << endl;
+  return 0 ;
+}
+
+template<typename Matrix>
+int dumpData::dump(ofstream &dumpStream, Matrix &data)
+{
+  for (unsigned int row = 0 ; row < data.rows() ; ++row)
+    for (unsigned int col = 0 ; col < data.cols() ; ++col)
+      dumpStream << data(row,col) << " " ;
+  return 0 ;
+}
+
+int dumpData::dump(std::string &fileName,
+                   std::vector<
+                     Eigen::Matrix<double, 6, 1, 0, 6, 1>,
+                     Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1, 0, 6, 1> >
+                   > &data)
+{
+  ofstream dumpStream ;
+  dumpStream.open(fileName.c_str(),ofstream::out);
+  int N = data.size()-1;
+  for (unsigned int i = 0 ; i < N ; ++i)
+  {
+    this->dump(dumpStream,data[i]);
     dumpStream << endl ;
   }
   dumpStream.close();

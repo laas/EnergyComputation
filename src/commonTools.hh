@@ -18,7 +18,20 @@ int derivation(const std::vector<std::vector<double> > &x,
                std::vector<std::vector<double> > &dx);
 int integration( const std::vector< std::vector<double> > & dx,
                  std::vector< std::vector<double> > & x);
-int dumpData(std::string fileName, std::vector< std::vector<double> >& data);
+
+struct dumpData{
+  int dump(std::string &fileName, std::vector< std::vector<double> >& data);
+  int dump(std::string &fileName, std::vector< se3::SE3 >& data) ;
+
+  int dump(std::string &fileName,
+           std::vector<
+             Eigen::Matrix<double, 6, 1, 0, 6, 1>,
+             Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1, 0, 6, 1> >
+           > &data) ;
+
+  template<typename Matrix>
+  int dump(std::ofstream &dumpStream, Matrix & data) ;
+};
 
 void getOptions(int argc,
                 char *argv[],
@@ -87,6 +100,27 @@ public :
         out[i][j] = ltmp ;
       }
     }
+  }
+
+  void filter(std::vector< Eigen::Matrix<double,6,1> ,
+                           Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1> > > & in,
+              std::vector< Eigen::Matrix<double,6,1> ,
+                           Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1> > > & out)
+  {
+    std::vector< std::vector<double> > in_vec ( in.size() , std::vector<double>(6,0.0) );
+    std::vector< std::vector<double> > out_vec ( out.size() , std::vector<double>(6,0.0) );
+    for(unsigned i=0 ; i<in.size() ; ++i)
+    {
+      for(unsigned j=0 ; j<6 ; ++j)
+        in_vec[i][j] = in[i](j) ;
+    }
+    this->filter(in_vec,out_vec);
+    for(unsigned i=0 ; i<in.size() ; ++i)
+    {
+      for(unsigned j=0 ; j<6 ; ++j)
+        out[i](j) = out_vec[i][j] ;
+    }
+    return ;
   }
 private :
   std::vector<double> m_filterWindow;
