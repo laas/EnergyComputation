@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
+
 import numpy as np
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import matplotlib.pyplot as plt
+from decimal import Decimal
 
 class XP :
     def __init__(self):
@@ -20,7 +25,9 @@ class XP :
         self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations':5}
         self.kpi_list = ["WalkedDistance","SuccessRate","MaxtrackingError",
                          "DurationOfTheExperiment","EnergyOfMotors","EnergyOfWalking",
-                         "CostOfTransport","MechaCostOfTransport","Froude"]
+                         "CostOfTransport","MechaCostOfTransport","FroudeNumber"]
+        self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
+                               "Dimensionless","Dimensionless"]
 
     def __str__(self):
         attrs = vars(self)
@@ -104,7 +111,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
 
         if header_line[i].find("degrees") != -1:
             deg_index = header_line[i].find("degrees")
-            current_setup = header_line[i][(deg_index-2):deg_index]+"degrees"
+            current_setup = header_line[i][(deg_index-2):deg_index]+"°C"
         elif header_line[i].find("Bearing") != -1:
             current_setup = "Bearing"
         elif header_line[i].find("Pushes") != -1:
@@ -129,7 +136,6 @@ def discrimin_xp(header_file,header_line,list_lines_split):
                         np.mean(MechaCostOfTransport),
                         np.mean(Froude)])'''
         print "xp_list[",i,"] : ", len(xp_list)
-    #for i in range(len(xp_list)) f, axarr = plt.subplots(2, 2):
     #    print i, xp_list[i]
     return xp_list
 
@@ -156,13 +162,12 @@ def mean_xp(xp_list) :
 
 def plot_graph(list_mean_xp,xp_list) :
     xp_tmp=XP()
-    i=0
-    for key in ["hwalk"] :#xp_tmp.algo_dico.keys() :
-        plt.figure(i)
-        f, ax = plt.subplots(3, 3)
+    for key in xp_tmp.algo_dico.keys() :#["hwalk"] :#xp_tmp.algo_dico.keys() :
+        fig, ax = plt.subplots(3, 3)
+        plt.suptitle("Algorithm : "+key)
+        jk=0
         for j in range(3):
             for k in range(3):
-                jk=j+k
                 y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] #cot in hwalk
                 setup_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#setpu in hwalk
                 print "y_list",y_list
@@ -180,21 +185,19 @@ def plot_graph(list_mean_xp,xp_list) :
                 rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
 
                 # add some text for labels, title and axes ticks
-                ax[j, k].set_ylabel('Scores')
-                ax[j, k].set_title(xp_tmp.kpi_list[jk]+' for '+key)
-                ax[j, k].set_xticks(ind) #ax.set_xticks(ind + width / 2)
+                ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
+                ax[j, k].set_title(xp_tmp.kpi_list[jk])
+                ax[j, k].set_xticks(ind)
                 print "setup_tuple : ",setup_tuple
                 ax[j, k].set_xticklabels(setup_tuple)
+                ax[j, k].set_ylim((ax[j, k].get_ylim()[0],ax[j, k].get_ylim()[1]*1.1))
 
-                #ax.legend((rects1[0], rects2[0]), ('Men', 'Women'))
 
                 autolabel(rects1,ax,j,k)
-                #autolabel(rects2)
 
                 plt.show(block=False)
-                i+=1
+                jk+=1
                 print "end loop one plot "
-
 
     return
 
@@ -204,9 +207,14 @@ def autolabel(rects,ax,j,k):
     """
     for rect in rects:
         height = rect.get_height()
-        ax[j, k].text(rect.get_x() + rect.get_width()/2., height,
-                '%s' % str('{0:.3f}'.format(height)),
-                ha='center', va='bottom')
+        if height> 0.1:
+            ax[j, k].text(rect.get_x() + rect.get_width()/2., height,
+                    '%s' % str('{0:.2f}'.format(height)),
+                    ha='center', va='bottom')
+        else:
+            ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                      '%s' % str('{0:.2E}'.format(height)),
+                      ha='center', va='bottom')
 
 def close_figures():
     for i in plt.get_fignums():
@@ -215,7 +223,10 @@ def close_figures():
 
 if __name__ == '__main__':
     close_figures()
-    file_name = "/home/anthropobot/devel/EnergyComputation/_build/bin/DEBUG/results_2017_Oct_19.txt"
+    if len(sys.argv)>1:
+        file_name = sys.argv[1]#"/home/anthropobot/devel/EnergyComputation/_build/bin/DEBUG/results_2017_Oct_19.txt"
+    else :
+        exit(1)
     header_file, header_line, list_lines_split = read_file(file_name)
     xp_list = discrimin_xp(header_file, header_line, list_lines_split)
     list_mean_xp = mean_xp(xp_list)
