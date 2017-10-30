@@ -13,12 +13,14 @@ class XP :
         self.EnergyOfWalking_list = []
         self.CostOfTransport_list = []
         self.MechaCostOfTransport_list = []
-        self.MechaCostOfTransport_list = []
         self.Froude_list = []
         self.algo = ""
         self.setup = ""
         self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"PG":4,"Beam":5,"kawada":6}
         self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations':5}
+        self.kpi_list = ["WalkedDistance","SuccessRate","MaxtrackingError",
+                         "DurationOfTheExperiment","EnergyOfMotors","EnergyOfWalking",
+                         "CostOfTransport","MechaCostOfTransport","Froude"]
 
     def __str__(self):
         attrs = vars(self)
@@ -127,7 +129,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
                         np.mean(MechaCostOfTransport),
                         np.mean(Froude)])'''
         print "xp_list[",i,"] : ", len(xp_list)
-    #for i in range(len(xp_list)) :
+    #for i in range(len(xp_list)) f, axarr = plt.subplots(2, 2):
     #    print i, xp_list[i]
     return xp_list
 
@@ -155,50 +157,55 @@ def mean_xp(xp_list) :
 def plot_graph(list_mean_xp,xp_list) :
     xp_tmp=XP()
     i=0
-    for key in xp_tmp.algo_dico.keys() :
+    for key in ["hwalk"] :#xp_tmp.algo_dico.keys() :
         plt.figure(i)
-        y_list=[xp[6] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] #cot in hwalk
-        setup_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#setpu in hwalk
-        print "y_list",y_list
-        #plt.plot(y_list)
-        #plt.show()
-        y_tuple = tuple(y_list)
-        setup_tuple = tuple(setup_list)
-        N = len(y_tuple)
+        f, ax = plt.subplots(3, 3)
+        for j in range(3):
+            for k in range(3):
+                jk=j+k
+                y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] #cot in hwalk
+                setup_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#setpu in hwalk
+                print "y_list",y_list
+                #plt.plot(y_list)
+                #plt.show()
+                y_tuple = tuple(y_list)
+                setup_tuple = tuple(setup_list)
+                N = len(y_tuple)
 
-        ind = np.arange(N)  # the x locations for the groups
-        width = 0.35  # the width of the bars
+                ind = np.arange(N)  # the x locations for the groups
+                width = 0.35  # the width of the bars
 
-        fig, ax = plt.subplots()
-        rects1 = ax.bar(ind, y_tuple, width, color='r')
+                #fig, ax = plt.subplots()
+                #ax[0, 0].plot(x, y)
+                rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
 
-        # add some text for labels, title and axes ticks
-        ax.set_ylabel('Scores')
-        ax.set_title('cot'+' for '+key)
-        ax.set_xticks(ind) #ax.set_xticks(ind + width / 2)
-        print "setup_tuple : ",setup_tuple
-        ax.set_xticklabels(setup_tuple)
+                # add some text for labels, title and axes ticks
+                ax[j, k].set_ylabel('Scores')
+                ax[j, k].set_title(xp_tmp.kpi_list[jk]+' for '+key)
+                ax[j, k].set_xticks(ind) #ax.set_xticks(ind + width / 2)
+                print "setup_tuple : ",setup_tuple
+                ax[j, k].set_xticklabels(setup_tuple)
 
-        #ax.legend((rects1[0], rects2[0]), ('Men', 'Women'))
+                #ax.legend((rects1[0], rects2[0]), ('Men', 'Women'))
 
-        autolabel(rects1,ax)
-        #autolabel(rects2)
+                autolabel(rects1,ax,j,k)
+                #autolabel(rects2)
 
-        plt.show(block=False)
-        i+=1
-        print "end loop one plot "
+                plt.show(block=False)
+                i+=1
+                print "end loop one plot "
 
 
     return
 
-def autolabel(rects,ax):
+def autolabel(rects,ax,j,k):
     """
     Attach a text label above each bar displaying its height
     """
     for rect in rects:
         height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width()/2., height+1,
-                '%s' % str('{0:.2f}'.format(height)),
+        ax[j, k].text(rect.get_x() + rect.get_width()/2., height,
+                '%s' % str('{0:.3f}'.format(height)),
                 ha='center', va='bottom')
 
 def close_figures():
