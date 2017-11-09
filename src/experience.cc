@@ -317,14 +317,24 @@ int Experience::readData()
     }
 #endif
   }
-  // Create a temporary vector q_motor
+  // Filter q, torques, external wrench with the same filter
   std::vector< std::vector<double> > q_tmp = q_ ;
-  IIF.filter(q_,q_tmp);
+  IIF.filter(q_tmp,q_);
   std::vector< std::vector<double> > torques_tmp = torques_ ;
-  IIF.filter(torques_,torques_tmp);
+  IIF.filter(torques_tmp,torques_);
 
+#ifdef PINOCCHIO
+  std::vector< std::vector<double> > left_foot_wrench_tmp = left_foot_wrench_ ;
+  std::vector< std::vector<double> > right_foot_wrench_tmp = right_foot_wrench_ ;
+  std::vector< std::vector<double> > left_hand_wrench_tmp = left_hand_wrench_ ;
+  std::vector< std::vector<double> > right_hand_wrench_tmp = right_hand_wrench_ ;
+  IIF.filter(left_foot_wrench_tmp,left_foot_wrench_);
+  IIF.filter(right_foot_wrench_tmp,right_foot_wrench_);
+  IIF.filter(left_hand_wrench_tmp,left_hand_wrench_);
+  IIF.filter(right_hand_wrench_tmp,right_hand_wrench_);
+#endif
   // compute the velocity of the joints by finite differenziation
-  derivation(q_tmp,dq_);
+  derivation(q_,dq_);
 
   // compute the acceleration of the joints by finite differenziation
   derivation(dq_,ddq_);
@@ -601,12 +611,12 @@ int Experience::odometrie()
   // detect if foot is in contact :
   for (unsigned n=0 ; n<N ;++n)
   {
-    left_foot_isInContact_ [n] = left_foot_wrench_ [n][2] > 30.0 ; // Fz > 30 N
-    right_foot_isInContact_[n] = right_foot_wrench_[n][2] > 30.0 ; // Fz > 30 N
-    cout << left_foot_wrench_ [n][2] << " "
-         << right_foot_wrench_[n][2] << " "
-         << left_foot_isInContact_ [n] << " "
-         << right_foot_isInContact_[n] << " " << endl ;
+    left_foot_isInContact_ [n] = left_foot_wrench_ [n][2] > 20.0 ; // Fz > 30 N
+    right_foot_isInContact_[n] = right_foot_wrench_[n][2] > 20.0 ; // Fz > 30 N
+//    cout << left_foot_wrench_ [n][2] << " "
+//         << right_foot_wrench_[n][2] << " "
+//         << left_foot_isInContact_ [n] << " "
+//         << right_foot_isInContact_[n] << " " << endl ;
   }
   // reset config vectors
   world_M_base_.resize(N);
@@ -621,7 +631,7 @@ int Experience::odometrie()
   double fz_lf = 0.0 ;
   world_M_base_[0] = se3::SE3::Identity() ;
   world_V_base_[0].setZero();
-  // compute the velocity of the fett on the base frame
+  // compute the velocity of the feet on the base frame
   for(unsigned n=1 ; n<N ; ++n)
   {
     // update the configuration
@@ -630,6 +640,10 @@ int Experience::odometrie()
     q_odo_.head<3>() = world_M_base_[n-1].translation();
     q_odo_.segment<4>(3) =
         Eigen::Quaternion<double>(world_M_base_[n-1].rotation()).coeffs() ;
+    // update the velocity
+    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
+      dq_odo_(6+ddl) = dq_[n][ddl] ;
+    // update the z forces
     fz_rf = right_foot_wrench_[n][2] ;
     fz_lf = right_foot_wrench_[n][2] ;
     // compute the jacobians
@@ -641,16 +655,20 @@ int Experience::odometrie()
     world_V_rf_base = - jac_rf_ * dq_odo_ ;
     if (left_foot_isInContact_[n] && right_foot_isInContact_[n])
     {
+      //cout << "double support" << endl ;
       world_V_base_[n] =
         (world_V_lf_base * fz_lf + world_V_rf_base * fz_rf) / (fz_rf + fz_lf) ;
     }else if (left_foot_isInContact_[n])
     {
+      //cout << "left support" << endl ;
       world_V_base_[n] = world_V_lf_base ;
     }else if (right_foot_isInContact_[n])
     {
+      //cout << "right support" << endl ;
       world_V_base_[n] = world_V_rf_base ;
     }else
     {
+      //cout << "ARGH NO SUPPORT" << endl ;
       world_V_base_[n].setZero() ;
     }
   }
