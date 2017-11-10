@@ -83,7 +83,7 @@ int dumpData::dump(string &fileName, vector< vector<double> >& data)
   cout << "dumped" << endl;
   return 0 ;
 }
-
+#ifdef PINOCCHIO
 int dumpData::dump(string &fileName, vector< se3::SE3 >& data)
 {
   ofstream dumpStream ;
@@ -99,7 +99,7 @@ int dumpData::dump(string &fileName, vector< se3::SE3 >& data)
   cout << "dumped" << endl;
   return 0 ;
 }
-
+#endif
 template<typename Matrix>
 int dumpData::dump(ofstream &dumpStream, Matrix &data)
 {
@@ -108,7 +108,7 @@ int dumpData::dump(ofstream &dumpStream, Matrix &data)
       dumpStream << data(row,col) << " " ;
   return 0 ;
 }
-
+#ifdef PINOCCHIO
 int dumpData::dump(std::string &fileName,
                    std::vector<
                      Eigen::Matrix<double, 6, 1, 0, 6, 1>,
@@ -127,7 +127,7 @@ int dumpData::dump(std::string &fileName,
   cout << "dumped" << endl;
   return 0 ;
 }
-
+#endif
 void getOptions(int argc,
                 char *argv[],
                 path_t & dataRootPath,

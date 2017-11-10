@@ -1,7 +1,8 @@
 #include "experience.hh"
+#ifdef PINOCCHIO
 #include "pinocchio/algorithm/frames.hpp"
 #include "pinocchio/algorithm/joint-configuration.hpp"
-
+#endif
 using namespace std ;
 
 Experience::Experience(Motors * hrp2motors,
@@ -414,18 +415,21 @@ int Experience::defineBeginEndIndexes()
   vector< vector<double> > tmp_torques = torques_ ;
   vector< vector<double> > tmp_q = q_ ;
   vector< vector<double> > tmp_dq = dq_ ;
+#ifdef PINOCCHIO
   vector< vector<double> > tmp_left_foot_wrench  = left_foot_wrench_  ;
   vector< vector<double> > tmp_right_foot_wrench = right_foot_wrench_ ;
   vector< vector<double> > tmp_left_hand_wrench  = left_hand_wrench_  ;
   vector< vector<double> > tmp_right_hand_wrench = right_hand_wrench_ ;
-
+#endif
   torques_          .resize(endData_-beginData_);
   q_                .resize(endData_-beginData_);
   dq_               .resize(endData_-beginData_);
+#ifdef PINOCCHIO
   left_foot_wrench_ .resize(endData_-beginData_);
   right_foot_wrench_.resize(endData_-beginData_);
   left_hand_wrench_ .resize(endData_-beginData_);
   right_hand_wrench_.resize(endData_-beginData_);
+#endif
   vector< vector<double> > tmp_q_ref = q_ref_ ;
   vector< vector<double> > tmp_q_astate = q_astate_ ;
 
@@ -440,11 +444,12 @@ int Experience::defineBeginEndIndexes()
     if(!ignore_ref_)
       q_ref_[k] = tmp_q_ref[k+beginData_] ;
     q_astate_[k] = tmp_q_astate[k+beginData_] ;
-
+#ifdef PINOCCHIO
     left_foot_wrench_ [k] = tmp_left_foot_wrench [k+beginData_];
     right_foot_wrench_[k] = tmp_right_foot_wrench[k+beginData_];
     left_hand_wrench_ [k] = tmp_left_hand_wrench [k+beginData_];
     right_hand_wrench_[k] = tmp_right_hand_wrench[k+beginData_];
+#endif
   }
   return 0 ;
 }

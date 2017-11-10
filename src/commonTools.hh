@@ -21,14 +21,14 @@ int integration( const std::vector< std::vector<double> > & dx,
 
 struct dumpData{
   int dump(std::string &fileName, std::vector< std::vector<double> >& data);
+#ifdef PINOCCHIO
   int dump(std::string &fileName, std::vector< se3::SE3 >& data) ;
-
   int dump(std::string &fileName,
            std::vector<
              Eigen::Matrix<double, 6, 1, 0, 6, 1>,
              Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1, 0, 6, 1> >
            > &data) ;
-
+#endif
   template<typename Matrix>
   int dump(std::ofstream &dumpStream, Matrix & data) ;
 };
@@ -101,7 +101,7 @@ public :
       }
     }
   }
-
+#ifdef PINOCCHIO
   void filter(std::vector< Eigen::Matrix<double,6,1> ,
                            Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1> > > & in,
               std::vector< Eigen::Matrix<double,6,1> ,
@@ -122,6 +122,7 @@ public :
     }
     return ;
   }
+  #endif
 private :
   std::vector<double> m_filterWindow;
   double m_SamplingPeriod ;

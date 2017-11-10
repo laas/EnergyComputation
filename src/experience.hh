@@ -1,8 +1,9 @@
 #include "explorefolder.hh"
 #include "motors.hh"
 #include "commonTools.hh"
+#ifdef PINOCCHIO
 #include<Eigen/StdVector>
-
+#endif
 #ifndef EXPERIENCE_HH
 #define EXPERIENCE_HH
 
