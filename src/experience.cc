@@ -334,10 +334,10 @@ int Experience::readData()
   IIF.filter(left_hand_wrench_tmp,left_hand_wrench_);
   IIF.filter(right_hand_wrench_tmp,right_hand_wrench_);
 #endif
-  // compute the velocity of the joints by finite differenziation
+  // compute the velocity of the joints by finite differentiation
   derivation(q_,dq_);
 
-  // compute the acceleration of the joints by finite differenziation
+  // compute the acceleration of the joints by finite differentiation
   derivation(dq_,ddq_);
 
   // dump all the files
@@ -686,6 +686,7 @@ int Experience::odometrie()
   dump_.dump( dump , world_V_base_ ) ;
   for(unsigned n=1 ; n<N ; ++n)
   {
+    // TODO : update q_odo
     dq_odo_.head<6>() = world_V_base_filtered_[n] ;
     for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
       dq_odo_(6+ddl) = dq_[n][ddl] ;
