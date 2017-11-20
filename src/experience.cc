@@ -687,6 +687,9 @@ int Experience::odometrie()
   for(unsigned n=1 ; n<N ; ++n)
   {
     // TODO : update q_odo
+    q_odo_.head<3>() = world_M_base_[n-1].translation();
+    q_odo_.segment<4>(3) =
+        Eigen::Quaternion<double>(world_M_base_[n-1].rotation()).coeffs() ;
     dq_odo_.head<6>() = world_V_base_filtered_[n] ;
     for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
       dq_odo_(6+ddl) = dq_[n][ddl] ;
@@ -696,8 +699,8 @@ int Experience::odometrie()
                           .toRotationMatrix() ;
     world_M_base_[n].translation(p);
     world_M_base_[n].rotation(R);
-    cout << world_V_base_filtered_[n].transpose() << endl ;
-    //cout << world_M_base_[n] << endl ;
+    //cout << world_V_base_filtered_[n].transpose() << endl ;
+    cout << world_M_base_[n] << endl ;
   }
   dump = experienceName_+"_world_M_base.dat" ;
   dump_.dump( dump , world_M_base_ ) ;
