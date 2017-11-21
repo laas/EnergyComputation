@@ -70,9 +70,10 @@ public :
       m_filterWindow[i]/= sum;
   }
 
-  void filter(std::vector< std::vector<double> > & in,
+  void filter(const std::vector< std::vector<double> > & in,
               std::vector< std::vector<double> > & out)
   {
+    out = in ;
     for(unsigned j=0 ; j<in[0].size() ; ++j)
     {
       int n=0;
@@ -100,7 +101,31 @@ public :
         out[i][j] = ltmp ;
       }
     }
+    std::vector< std::vector<double> > out_shifted = out ;
+    shift_trajectory(out_shifted,out,-5);
   }
+
+  void shift_trajectory(const std::vector< std::vector<double> > & in,
+                        std::vector< std::vector<double> > & out,
+                        int shift=0)
+  {
+    out = in ;
+    shift *= -1 ;
+    for(unsigned j=0 ; j<out[0].size() ; ++j)
+    {
+      for(int i=0 ; i<out.size() ; ++i)
+      {
+        int is = i + shift;
+        if (is < 0)
+          is = 0;
+        if (is >= out.size())
+          is = out.size() - 1 ;
+
+        out[i] = in[is] ;
+      }
+    }
+  }
+
 #ifdef PINOCCHIO
   void filter(std::vector< Eigen::Matrix<double,6,1> ,
                            Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1> > > & in,

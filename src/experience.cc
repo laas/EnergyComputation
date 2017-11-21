@@ -336,33 +336,59 @@ int Experience::readData()
 #endif
   // compute the velocity of the joints by finite differentiation
   derivation(q_,dq_);
+  // filter the velocity
+  std::vector< std::vector<double> > dq_tmp = dq_ ;
+  IIF.filter(dq_tmp,dq_);
+  dq_tmp = dq_ ;
+  IIF.filter(dq_tmp,dq_);
 
   // compute the acceleration of the joints by finite differentiation
   derivation(dq_,ddq_);
+  // filter the acceleration
+  std::vector< std::vector<double> > ddq_tmp = ddq_ ;
+  IIF.filter(ddq_tmp,ddq_);
+  // filter the acceleration
+  ddq_tmp = ddq_ ;
+  IIF.filter(ddq_tmp,ddq_);
+
 
   // dump all the files
   string dump ;
-  //string dump = experienceName_+"_q.dat" ;
-  //dumpData( dump , q_ ) ;
-  //dump = experienceName_ + "_dq_.dat" ;
-  //dumpData( dump , dq_ ) ;
-  //dump = experienceName_ + "_ddq_.dat" ;
-  //dumpData( dump , ddq_ ) ;
-  //dump = experienceName_ + "_torques_filter.dat" ;
-  //dumpData( dump , torques_tmp ) ;
-  //dump = experienceName_ + "_torques.dat" ;
-  //dumpData( dump , torques_ ) ;
-  //dump = experienceName_ + "_q_filter.dat" ;
-  //dumpData( dump , q_tmp ) ;
-  //dump = experienceName_ + "_q_ref.dat" ;
-  //dumpData( dump , q_ref_ ) ;
-  //dump = experienceName_ + "_q_astate.dat" ;
-  //dumpData( dump , q_astate_ ) ;
+  dump = experienceName_+"_q.dat" ;
+  dump_.dump( dump , q_ ) ;
 
-//  dump = experienceName_+"_left_foot_wrench.dat" ;
-//  dump_.dump( dump , left_foot_wrench_   ) ;
-//  dump = experienceName_+"_right_foot_wrench.dat" ;
-//  dump_.dump( dump , right_foot_wrench_   ) ;
+  dump = experienceName_ + "_dq.dat" ;
+  dump_.dump( dump , dq_ ) ;
+
+  dump = experienceName_ + "_ddq.dat" ;
+  dump_.dump( dump , ddq_ ) ;
+
+  dump = experienceName_ + "_torques_raw.dat" ;
+  dump_.dump( dump , torques_tmp ) ;
+
+  dump = experienceName_ + "_torques.dat" ;
+  dump_.dump( dump , torques_ ) ;
+
+  dump = experienceName_ + "_q_raw.dat" ;
+  dump_.dump( dump , q_tmp ) ;
+
+  dump = experienceName_ + "_q_ref.dat" ;
+  dump_.dump( dump , q_ref_ ) ;
+
+  dump = experienceName_ + "_q_astate.dat" ;
+  dump_.dump( dump , q_astate_ ) ;
+
+  dump = experienceName_+"_left_foot_wrench.dat" ;
+  dump_.dump( dump , left_foot_wrench_   ) ;
+
+  dump = experienceName_+"_left_foot_wrench_raw.dat" ;
+  dump_.dump( dump , left_foot_wrench_tmp   ) ;
+
+  dump = experienceName_+"_right_foot_wrench.dat" ;
+  dump_.dump( dump , right_foot_wrench_   ) ;
+
+  dump = experienceName_+"_right_foot_wrench_raw.dat" ;
+  dump_.dump( dump , right_foot_wrench_tmp   ) ;
 
   data_astate_.clear();
   data_ref_.clear();
@@ -614,10 +640,13 @@ int Experience::odometrie()
 {
   unsigned int N = q_ref_.size() ;
   // detect if foot is in contact :
+  double mg = WeightOfRobot_;
   for (unsigned n=0 ; n<N ;++n)
   {
-    left_foot_isInContact_ [n] = left_foot_wrench_ [n][2] > 20.0 ; // Fz > 30 N
-    right_foot_isInContact_[n] = right_foot_wrench_[n][2] > 20.0 ; // Fz > 30 N
+    left_foot_isInContact_ [n] =
+        left_foot_wrench_ [n][2] > 10/100 * mg ; // Fz > 10% RobotWeight N
+    right_foot_isInContact_[n] =
+        right_foot_wrench_[n][2] > 10/100 * mg ;
 //    cout << left_foot_wrench_ [n][2] << " "
 //         << right_foot_wrench_[n][2] << " "
 //         << left_foot_isInContact_ [n] << " "
@@ -658,12 +687,12 @@ int Experience::odometrie()
     // compute the velocity of the base relatif to the stance foot
     world_V_lf_base = - jac_lf_ * dq_odo_ ;
     world_V_rf_base = - jac_rf_ * dq_odo_ ;
-    if (left_foot_isInContact_[n] && right_foot_isInContact_[n])
-    {
-      //cout << "double support" << endl ;
-      world_V_base_[n] =
-        (world_V_lf_base * fz_lf + world_V_rf_base * fz_rf) / (fz_rf + fz_lf) ;
-    }else if (left_foot_isInContact_[n])
+//    if (left_foot_isInContact_[n] && right_foot_isInContact_[n])
+//    {
+//      //cout << "double support" << endl ;
+//      world_V_base_[n] =
+//        (world_V_lf_base * fz_lf + world_V_rf_base * fz_rf) / (fz_rf + fz_lf) ;
+    /*}else*/if (left_foot_isInContact_[n])
     {
       //cout << "left support" << endl ;
       world_V_base_[n] = world_V_lf_base ;
@@ -676,31 +705,43 @@ int Experience::odometrie()
       //cout << "ARGH NO SUPPORT" << endl ;
       world_V_base_[n].setZero() ;
     }
+    world_M_base_[n] = se3::exp6(world_V_base_[n]*0.005).act(world_M_base_[n-1]) ;
   }
-  world_V_base_filtered_ = world_V_base_ ;
-  IIF.filter(world_V_base_,world_V_base_filtered_);
   string dump ;
-  dump = experienceName_+"_world_V_basef.dat" ;
-  dump_.dump( dump , world_V_base_filtered_ ) ;
   dump = experienceName_+"_world_V_base.dat" ;
   dump_.dump( dump , world_V_base_ ) ;
-  for(unsigned n=1 ; n<N ; ++n)
-  {
-    // TODO : update q_odo
-    dq_odo_.head<6>() = world_V_base_filtered_[n] ;
-    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
-      dq_odo_(6+ddl) = dq_[n][ddl] ;
-    Eigen::VectorXd q = se3::integrate(*robotModel_,q_odo_,dq_odo_*0.005);
-    Eigen::Vector3d p = q.head<3>() ;
-    Eigen::Matrix3d R = Eigen::Quaternion<double>(q.segment<4>(3))
-                          .toRotationMatrix() ;
-    world_M_base_[n].translation(p);
-    world_M_base_[n].rotation(R);
-    cout << world_V_base_filtered_[n].transpose() << endl ;
-    //cout << world_M_base_[n] << endl ;
-  }
   dump = experienceName_+"_world_M_base.dat" ;
   dump_.dump( dump , world_M_base_ ) ;
+
+//  world_V_base_filtered_ = world_V_base_ ;
+//  IIF.filter(world_V_base_,world_V_base_filtered_);
+//  dump = experienceName_+"_world_V_basef.dat" ;
+//  dump_.dump( dump , world_V_base_filtered_ ) ;
+//  for(unsigned n=1 ; n<N ; ++n)
+//  {
+//    // update the configuration
+//    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
+//    {
+//      q_odo_(7+ddl) = q_[n][ddl] ;
+//    }
+//    q_odo_.head<3>() = world_M_base_[n-1].translation();
+////    q_odo_.segment<4>(3) =
+////        Eigen::Quaternion<double>(world_M_base_[n-1].rotation()).coeffs() ;
+////    dq_odo_.head<6>() = world_V_base_filtered_[n] ;
+//    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
+//    {
+//      dq_odo_(6+ddl) = dq_[n][ddl] ;
+//    }
+//    Eigen::VectorXd q = se3::integrate(*robotModel_,q_odo_,dq_odo_*0.005);
+//    Eigen::Vector3d p = q.head<3>() ;
+//    Eigen::Matrix3d R = Eigen::Quaternion<double>(q.segment<4>(3))
+//                          .toRotationMatrix() ;
+//    world_M_base_[n].translation(p);
+//    world_M_base_[n].rotation(R);
+//    cout << world_V_base_filtered_[n].transpose() << endl ;
+//    //cout << world_M_base_[n] << endl ;
+//  }
+
   return 0;
 }
 #endif
