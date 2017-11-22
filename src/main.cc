@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef PINOCCHIO
-  // create a pionocchio model
+  // create a Pinocchio model
   se3::Model robotModel ;
   se3::urdf::buildModel(
         robotUrdfPath.string(),

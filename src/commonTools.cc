@@ -66,7 +66,8 @@ int integration( const std::vector< std::vector<double> > & dx,
   return 0 ;
 }
 
-int dumpData::dump(string &fileName, vector< vector<double> >& data)
+int dumpData::dump(string &fileName,
+                   std::vector<std::vector<double> > &data)
 {
   ofstream dumpStream ;
   dumpStream.open(fileName.c_str(),ofstream::out);
@@ -83,6 +84,22 @@ int dumpData::dump(string &fileName, vector< vector<double> >& data)
   cout << "dumped" << endl;
   return 0 ;
 }
+
+int dumpData::dump(string &fileName,
+                   std::vector<int> &data)
+{
+  ofstream dumpStream ;
+  dumpStream.open(fileName.c_str(),ofstream::out);
+  int N = data.size();
+  for (unsigned int i = 0 ; i < N ; ++i)
+  {
+    dumpStream << data[i] << endl ;
+  }
+  dumpStream.close();
+  cout << "dumped" << endl;
+  return 0 ;
+}
+
 #ifdef PINOCCHIO
 int dumpData::dump(string &fileName, vector< se3::SE3 >& data)
 {
@@ -100,6 +117,7 @@ int dumpData::dump(string &fileName, vector< se3::SE3 >& data)
   return 0 ;
 }
 #endif
+
 template<typename Matrix>
 int dumpData::dump(ofstream &dumpStream, Matrix &data)
 {
@@ -108,11 +126,12 @@ int dumpData::dump(ofstream &dumpStream, Matrix &data)
       dumpStream << data(row,col) << " " ;
   return 0 ;
 }
+
 #ifdef PINOCCHIO
 int dumpData::dump(std::string &fileName,
                    std::vector<
-                     Eigen::Matrix<double, 6, 1, 0, 6, 1>,
-                     Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1, 0, 6, 1> >
+                     Eigen::MatrixXd,
+                     Eigen::aligned_allocator<Eigen::MatrixXd>
                    > &data)
 {
   ofstream dumpStream ;
@@ -125,6 +144,16 @@ int dumpData::dump(std::string &fileName,
   }
   dumpStream.close();
   cout << "dumped" << endl;
+  return 0 ;
+}
+int dumpData::dump(std::string &fileName,
+         std::vector<Vector6d, Eigen::aligned_allocator<Vector6d> > &data)
+{
+  std::vector<Eigen::MatrixXd,Eigen::aligned_allocator<Eigen::MatrixXd> > data2;
+  data2.resize(data.size());
+  for(unsigned i=0 ; i <data.size() ; ++i)
+    data2[i] = data[i] ;
+  this->dump(fileName,data2);
   return 0 ;
 }
 #endif

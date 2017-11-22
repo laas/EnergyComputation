@@ -12,7 +12,7 @@
 
 typedef boost::filesystem::path path_t;
 typedef std::list<path_t> result_set_t;
-
+typedef Eigen::Matrix<double,6,1> Vector6d ;
 int lowpass(double x, double &y, double i, double a);
 int derivation(const std::vector<std::vector<double> > &x,
                std::vector<std::vector<double> > &dx);
@@ -21,13 +21,14 @@ int integration( const std::vector< std::vector<double> > & dx,
 
 struct dumpData{
   int dump(std::string &fileName, std::vector< std::vector<double> >& data);
+  int dump(std::string &fileName, std::vector< int >& data);
 #ifdef PINOCCHIO
   int dump(std::string &fileName, std::vector< se3::SE3 >& data) ;
   int dump(std::string &fileName,
-           std::vector<
-             Eigen::Matrix<double, 6, 1, 0, 6, 1>,
-             Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1, 0, 6, 1> >
-           > &data) ;
+           std::vector<Eigen::MatrixXd,
+                       Eigen::aligned_allocator<Eigen::MatrixXd> > &data) ;
+  int dump(std::string &fileName,
+           std::vector<Vector6d, Eigen::aligned_allocator<Vector6d> > &data) ;
 #endif
   template<typename Matrix>
   int dump(std::ofstream &dumpStream, Matrix & data) ;

@@ -47,7 +47,12 @@ private : // methods
   int setExperienceName(path_t rootFolder);
   int readData();
   int defineBeginEndIndexes();
+#ifdef PINOCCHIO
   int odometrie();
+  int contact_detection(const std::vector<std::vector<double> > &wrench,
+                        std::vector<int> & isInContact);
+  Eigen::VectorXd fromVrmlMotor2PinocchioJoint(std::vector<double> vrml);
+#endif
   int computeTheEnergy();
   int compareRefMeasure();
   int detectFall();
@@ -114,8 +119,8 @@ private : // attributes
                Eigen::Matrix<double,6,1>,
                Eigen::aligned_allocator<Eigen::Matrix<double,6,1> >
              > world_V_base_ , world_V_base_filtered_ ;
-  std::vector< bool > left_foot_isInContact_ ,
-                      right_foot_isInContact_ ;
+  std::vector< int > left_foot_isInContact_ ,
+                      right_foot_isInContact_;
   Eigen::VectorXd q_odo_,dq_odo_ ;
   se3::Data::Matrix6x jac_lf_,jac_rf_ ;
 #endif
