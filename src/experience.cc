@@ -376,7 +376,7 @@ int Experience::readData()
 
   dump = experienceName_ + "_q_astate.dat" ;
   dump_.dump( dump , q_astate_ ) ;
-
+#ifdef PINOCCHIO
   dump = experienceName_+"_left_foot_wrench.dat" ;
   dump_.dump( dump , left_foot_wrench_   ) ;
 
@@ -388,7 +388,7 @@ int Experience::readData()
 
   dump = experienceName_+"_right_foot_wrench_raw.dat" ;
   dump_.dump( dump , right_foot_wrench_tmp   ) ;
-
+#endif
   data_astate_.clear();
   data_ref_.clear();
   return 0;

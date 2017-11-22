@@ -12,7 +12,9 @@
 
 typedef boost::filesystem::path path_t;
 typedef std::list<path_t> result_set_t;
+#ifdef PINOCCHIO
 typedef Eigen::Matrix<double,6,1> Vector6d ;
+#endif
 int lowpass(double x, double &y, double i, double a);
 int derivation(const std::vector<std::vector<double> > &x,
                std::vector<std::vector<double> > &dx);
