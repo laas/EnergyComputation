@@ -774,6 +774,8 @@ int Experience::odometrie()
   dump_.dump( dump , world_V_base_ ) ;
   dump = experienceName_+"_world_M_base.dat" ;
   dump_.dump( dump , world_M_base_ ) ;
+  std::vector<se3::SE3>::iterator it = world_M_base_.end()-1;
+  walkedDistanced_ = (*it).translation()[0];
 
 //  world_V_base_filtered_ = world_V_base_ ;
 //  IIF.filter(world_V_base_,world_V_base_filtered_);
