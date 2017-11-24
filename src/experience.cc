@@ -514,28 +514,38 @@ int Experience::computeTheEnergy()
   vector< vector<double> > energyOfWalk ( N , vector<double> (ddl_,0) );
   integration(powerOfWalk_,energyOfWalk);
 
-  EnergyOfMotor_J_m_s_ = 0.0;
-  EnergyOfWalking_J_m_s_ = 0.0;
-  double EnergyOfMotorDDL = 0.0;
-  double EnergyOfWalkingDDL = 0.0;
-  for (unsigned int j = 0 ; j < ddl_ ; ++j )
+  if (walkedDistanced_ <= 0)
   {
-    EnergyOfMotorDDL += energyOfMotors.back()[j] ;
-    EnergyOfWalkingDDL += energyOfWalk.back()[j] ;
+    EnergyOfMotor_J_m_s_= 0;
+    EnergyOfWalking_J_m_s_ = 0;
+    MechaCostOfTransport_ = 0;
+    CostOfTransport_ = 0;
+    FroudeNumber_ = 0;
   }
+  else
+  {
+    EnergyOfMotor_J_m_s_ = 0.0;
+    EnergyOfWalking_J_m_s_ = 0.0;
+    double EnergyOfMotorDDL = 0.0;
+    double EnergyOfWalkingDDL = 0.0;
+    for (unsigned int j = 0 ; j < ddl_ ; ++j )
+    {
+      EnergyOfMotorDDL += energyOfMotors.back()[j] ;
+      EnergyOfWalkingDDL += energyOfWalk.back()[j] ;
+    }
 
-  EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL   /walkedDistanced_
-                           /(energyOfMotors.size()*0.005) ;
-  EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL /walkedDistanced_
-                           /(energyOfMotors.size()*0.005) ;
+    EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL   /walkedDistanced_
+                             /(energyOfMotors.size()*0.005) ;
+    EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL /walkedDistanced_
+                             /(energyOfMotors.size()*0.005) ;
 
-  double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
+    double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
 
-  MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
-  CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
+    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
+    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
 
-  FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
-
+    FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
+  }
   return 0 ;
 }
 
