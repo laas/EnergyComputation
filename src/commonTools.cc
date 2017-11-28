@@ -66,7 +66,8 @@ int integration( const std::vector< std::vector<double> > & dx,
   return 0 ;
 }
 
-int dumpData(string fileName, vector< vector<double> >& data)
+int dumpData::dump(string &fileName,
+                   std::vector<std::vector<double> > &data)
 {
   ofstream dumpStream ;
   dumpStream.open(fileName.c_str(),ofstream::out);
@@ -84,29 +85,113 @@ int dumpData(string fileName, vector< vector<double> >& data)
   return 0 ;
 }
 
+int dumpData::dump(string &fileName,
+                   std::vector<int> &data)
+{
+  ofstream dumpStream ;
+  dumpStream.open(fileName.c_str(),ofstream::out);
+  int N = data.size();
+  for (unsigned int i = 0 ; i < N ; ++i)
+  {
+    dumpStream << data[i] << endl ;
+  }
+  dumpStream.close();
+  cout << "dumped" << endl;
+  return 0 ;
+}
+
+#ifdef PINOCCHIO
+int dumpData::dump(string &fileName, vector< se3::SE3 >& data)
+{
+  ofstream dumpStream ;
+  dumpStream.open(fileName.c_str(),ofstream::out);
+  int N = data.size()-1;
+  for (unsigned int i = 0 ; i < N ; ++i)
+  {
+    this->dump(dumpStream,data[i].translation());
+    this->dump(dumpStream,data[i].rotation());
+    dumpStream << endl ;
+  }
+  dumpStream.close();
+  cout << "dumped" << endl;
+  return 0 ;
+}
+#endif
+
+template<typename Matrix>
+int dumpData::dump(ofstream &dumpStream, Matrix &data)
+{
+  for (unsigned int row = 0 ; row < data.rows() ; ++row)
+    for (unsigned int col = 0 ; col < data.cols() ; ++col)
+      dumpStream << data(row,col) << " " ;
+  return 0 ;
+}
+
+#ifdef PINOCCHIO
+int dumpData::dump(std::string &fileName,
+                   std::vector<
+                     Eigen::MatrixXd,
+                     Eigen::aligned_allocator<Eigen::MatrixXd>
+                   > &data)
+{
+  ofstream dumpStream ;
+  dumpStream.open(fileName.c_str(),ofstream::out);
+  int N = data.size()-1;
+  for (unsigned int i = 0 ; i < N ; ++i)
+  {
+    this->dump(dumpStream,data[i]);
+    dumpStream << endl ;
+  }
+  dumpStream.close();
+  cout << "dumped" << endl;
+  return 0 ;
+}
+int dumpData::dump(std::string &fileName,
+         std::vector<Vector6d, Eigen::aligned_allocator<Vector6d> > &data)
+{
+  std::vector<Eigen::MatrixXd,Eigen::aligned_allocator<Eigen::MatrixXd> > data2;
+  data2.resize(data.size());
+  for(unsigned i=0 ; i <data.size() ; ++i)
+    data2[i] = data[i] ;
+  this->dump(fileName,data2);
+  return 0 ;
+}
+#endif
 void getOptions(int argc,
                 char *argv[],
                 path_t & dataRootPath,
                 path_t & robotRootPath,
-                //path_t & robotUrdfPath,
+#ifdef PINOCCHIO
+                path_t & robotUrdfPath,
+#endif
                 path_t & outputFile)
 {
   //std::cout << "argc:" << argc << std::endl;
-  //if (argc < 4)
+#ifdef PINOCCHIO
+  if (argc < 4)
+  {
+    cerr << " This program takes 1 arguments: " << endl;
+    cerr << "./hrp2energy DATA_PATH ROBOT_FILE_PATH ROBOT_URDF_PATH" << endl;
+    exit(-1);
+  }
+#else
   if (argc < 3)
   {
     cerr << " This program takes 1 arguments: " << endl;
     cerr << "./hrp2energy DATA_PATH ROBOT_FILE_PATH ROBOT_URDF_PATH" << endl;
     exit(-1);
   }
+#endif
   else
   {
     dataRootPath=path_t(argv[1]);
     robotRootPath=path_t(argv[2]);
-    //robotUrdfPath=path_t(argv[3]);
+#ifdef PINOCCHIO
+    robotUrdfPath=path_t(argv[3]);
+#endif
     boost::gregorian::date d = boost::gregorian::day_clock::universal_day();
     ostringstream fileName ("") ;
-    fileName << /*dataRootPath.string()*/ "."
+    fileName << "."
              << "/results_"
              << d.year()
              << "_"

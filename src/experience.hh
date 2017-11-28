@@ -1,7 +1,9 @@
 #include "explorefolder.hh"
 #include "motors.hh"
 #include "commonTools.hh"
-
+#ifdef PINOCCHIO
+#include<Eigen/StdVector>
+#endif
 #ifndef EXPERIENCE_HH
 #define EXPERIENCE_HH
 
@@ -9,7 +11,9 @@ class Experience
 {
 public: // methods
   Experience(Motors * hrp2motors,
-             //se3::Model * hrp2model,
+#ifdef PINOCCHIO
+             se3::Model * hrp2model,
+#endif
              path_t input_state_path,
              path_t input_ref_path,
              path_t rootFolder);
@@ -42,8 +46,13 @@ public: // methods
 private : // methods
   int setExperienceName(path_t rootFolder);
   int readData();
-  int filterTheData();
   int defineBeginEndIndexes();
+#ifdef PINOCCHIO
+  int odometrie();
+  int contact_detection(const std::vector<std::vector<double> > &wrench,
+                        std::vector<int> & isInContact);
+  Eigen::VectorXd fromVrmlMotor2PinocchioJoint(std::vector<double> vrml);
+#endif
   int computeTheEnergy();
   int compareRefMeasure();
   int detectFall();
@@ -60,8 +69,6 @@ private : // attributes
   int endData_ ;
   unsigned int ddl_ ;
   Motors * hrp2motors_ ;
-  //se3::Model * robotModel_ ;
-  //se3::Data * robotData_ ;
   std::string titleRobotConfig_ ;
   std::vector< std::vector<double> > data_astate_ ;
   std::vector< std::vector<double> > data_ref_ ;
@@ -100,6 +107,24 @@ private : // attributes
   double WeightOfRobot_ ; //in Newton
   double LegLenght_ ;
   double Gravity_ ;
+
+#ifdef PINOCCHIO
+  // for odometrie
+  se3::Model * robotModel_ ;
+  se3::Data * robotData_ ;
+  std::vector< std::vector<double> > left_foot_wrench_ , right_foot_wrench_,
+                                     left_hand_wrench_ , right_hand_wrench_;
+  std::vector< se3::SE3 > world_M_base_ ;
+  std::vector<
+               Eigen::Matrix<double,6,1>,
+               Eigen::aligned_allocator<Eigen::Matrix<double,6,1> >
+             > world_V_base_ , world_V_base_filtered_ ;
+  std::vector< int > left_foot_isInContact_ ,
+                      right_foot_isInContact_;
+  Eigen::VectorXd q_odo_,dq_odo_ ;
+  se3::Data::Matrix6x jac_lf_,jac_rf_ ;
+#endif
+  dumpData dump_ ;
 };
 
 #endif // EXPERIENCE_HH

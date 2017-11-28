@@ -95,13 +95,20 @@ int main(int argc, char *argv[])
   path_t robotRootPath("");
   path_t outputFile("");
   path_t robotUrdfPath("");
+#ifdef PINOCCHIO
+  getOptions(argc,argv,dataRootPath,robotRootPath,robotUrdfPath,outputFile);
+#else
   getOptions(argc,argv,dataRootPath,robotRootPath/*,robotUrdfPath*/,outputFile);
+#endif
 
-  // create a pionocchio model
-  //    se3::Model robotModel ;
-  //    se3::urdf::buildModel(robotUrdfPath.string(),
-  //                          se3::JointModelFreeFlyer(),
-  //                          robotModel);
+#ifdef PINOCCHIO
+  // create a Pinocchio model
+  se3::Model robotModel ;
+  se3::urdf::buildModel(
+        robotUrdfPath.string(),
+        se3::JointModelFreeFlyer(),
+        robotModel);
+#endif
 
   // create a motor model
   Motors HRP2motors (robotRootPath) ;
@@ -126,7 +133,9 @@ int main(int argc, char *argv[])
     cout << "file " << i <<  " " << endl ;
     // create an "Experience" object for each log
     Experience tmp_Xp = Experience (&HRP2motors,
-                                    //&robotModel,
+#ifdef PINOCCHIO
+                                    &robotModel,
+#endif
                                     *it_file_astate,
                                     *it_file_ref,
                                     dataRootPath);

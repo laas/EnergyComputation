@@ -42,11 +42,26 @@ FILE(
 # Boost filesystem is used to read the datafiles.
 SEARCH_FOR_BOOST()
 # Use pinocchio to compute the torques during the motion
-#ADD_REQUIRED_DEPENDENCY("pinocchio >=  1.2.4")
+ADD_OPTIONAL_DEPENDENCY("pinocchio >=  1.2.4")
+option(USE_PINOCCHIO "compile with pinocchio")
 # add eigen to compute the torques via rnea
-ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.0.5")
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIRS})
+ADD_OPTIONAL_DEPENDENCY("eigen3 >= 3.0.5")
+
 
 ADD_EXECUTABLE(hrp2energy ${source_files})
-#PKG_CONFIG_USE_DEPENDENCY(hrp2energy pinocchio)
+# link pinocchio
+IF ( '${PINOCCHIO_FOUND}' STREQUAL '1' )
+IF ( '${USE_PINOCCHIO}' STREQUAL 'ON' )
+  message (STATUS "## linking pinocchio ##" )
+  # equivalent of "#define PINOCCHIO=linked"
+  add_definitions ( -DPINOCCHIO="linked" )
+  # link pinocchio
+  PKG_CONFIG_USE_DEPENDENCY(hrp2energy pinocchio)
+  # add eigen
+  INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIRS})
+ENDIF ( '${USE_PINOCCHIO}' STREQUAL 'ON' )
+ELSE ( '${PINOCCHIO_FOUND}' STREQUAL '1' )
+    message (STATUS "pinocchio not found" )
+ENDIF ( '${PINOCCHIO_FOUND}' STREQUAL '1' )
+# link BOOST
 TARGET_LINK_LIBRARIES(hrp2energy ${Boost_LIBRARIES})

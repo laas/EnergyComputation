@@ -1,9 +1,14 @@
 #include "experience.hh"
-
+#ifdef PINOCCHIO
+#include "pinocchio/algorithm/frames.hpp"
+#include "pinocchio/algorithm/joint-configuration.hpp"
+#endif
 using namespace std ;
 
 Experience::Experience(Motors * hrp2motors,
-                       //se3::Model * hrp2model,
+#ifdef PINOCCHIO
+                       se3::Model * hrp2model,
+#endif
                        path_t input_state_path,
                        path_t input_ref_path,
                        path_t rootFolder)
@@ -11,9 +16,15 @@ Experience::Experience(Motors * hrp2motors,
   input_astate_path_ = input_state_path ;
   input_ref_path_ = input_ref_path ;
   hrp2motors_ = hrp2motors ;
-  //    robotModel_ = hrp2model ;
-  //    robotData_ = new se3::Data(*robotModel_);
+#ifdef PINOCCHIO
+  robotModel_ = hrp2model ;
+  robotData_ = new se3::Data(*robotModel_);
+  q_odo_.resize(robotModel_->nq);
+  dq_odo_.resize(robotModel_->nv);
 
+  jac_lf_.resize(6,robotModel_->nv);
+  jac_rf_.resize(6,robotModel_->nv);
+#endif
   ddl_ = hrp2motors->gear_ratio_.size();
 
   beginData_ = 0 ;
@@ -53,6 +64,14 @@ Experience::Experience(Motors * hrp2motors,
   maxTrackingError_ = 0.0 ;
 
   setExperienceName(rootFolder);
+#ifdef PINOCCHIO
+  left_foot_wrench_ .clear();
+  right_foot_wrench_.clear();
+  left_hand_wrench_ .clear();
+  right_hand_wrench_.clear();
+  left_foot_isInContact_ .clear();
+  right_foot_isInContact_.clear();
+#endif
 }
 
 int Experience::setExperienceName(path_t rootFolder)
@@ -158,6 +177,9 @@ int Experience::handleData()
     has_fallen_ = true ;
 //    return -1 ;
   }
+#ifdef PINOCCHIO
+  odometrie();
+#endif
   computeTheEnergy();
 
   return 0 ;
@@ -238,61 +260,135 @@ int Experience::readData()
 
   // save the data wanted in separated buffers for computation
   int N = data_astate_.size() ;
-  q_.resize( N , vector<double>(ddl_,0) ) ;
-  q_ref_.resize( N , vector<double>(ddl_,0) ) ;
-  q_astate_.resize( N , vector<double>(ddl_,0) );
-  dq_.resize( N , vector<double>(ddl_,0) ) ;
-  ddq_.resize( N , vector<double>(ddl_,0) ) ;
-  torques_.resize( N , vector<double>(ddl_,0) ) ;
-  rnea_torques_.resize( N , vector<double>(ddl_,0) ) ;
-
+  q_                .resize( N , vector<double>(ddl_,0.0) ) ;
+  q_ref_            .resize( N , vector<double>(ddl_,0.0) ) ;
+  q_astate_         .resize( N , vector<double>(ddl_,0.0) ) ;
+  dq_               .resize( N , vector<double>(ddl_,0.0) ) ;
+  ddq_              .resize( N , vector<double>(ddl_,0.0) ) ;
+  torques_          .resize( N , vector<double>(ddl_,0.0) ) ;
+  rnea_torques_     .resize( N , vector<double>(ddl_,0.0) ) ;
+#ifdef PINOCCHIO
+  left_foot_wrench_      .resize( N , vector<double>(6,0.0) ) ;
+  right_foot_wrench_     .resize( N , vector<double>(6,0.0) ) ;
+  left_hand_wrench_      .resize( N , vector<double>(6,0.0) ) ;
+  right_hand_wrench_     .resize( N , vector<double>(6,0.0) ) ;
+  left_foot_isInContact_ .resize( N , 0.0 ) ;
+  right_foot_isInContact_.resize( N , 0.0 ) ;
+#endif
   for (unsigned int i = 0 ; i < N ; ++i )
   {
-    for (unsigned int j = 0 ; j < 30 ; ++j )
+    int index=0 ;
+    for (unsigned int j = index ; j < index+30 ; ++j )
     {
-      q_[i][j] = hrp2motors_->gear_ratio_[j] * data_astate_[i][j];
+      q_[i][j-index] = hrp2motors_->gear_ratio_[j] * data_astate_[i][j];
     }
-    for (unsigned int j = 0 ; j < 30 ; ++j )
+    index=0;
+    for (unsigned int j = index ; j < index+30 ; ++j )
     {
-      q_astate_[i][j] = data_astate_[i][j];
+      q_astate_[i][j-index] = data_astate_[i][j];
       if(!ignore_ref_)
-        q_ref_[i][j] = data_ref_[i][j];
+        q_ref_[i][j-index] = data_ref_[i][j];
     }
-    for (unsigned int j = 40 ; j < 40+30 ; ++j )
+    index=40;
+    for (unsigned int j = index ; j < index+30 ; ++j )
     {
-      torques_[i][j-40] = data_astate_[i][j] / hrp2motors_->gear_ratio_[j-40];
+      torques_[i][j-index] =
+          data_astate_[i][j] / hrp2motors_->gear_ratio_[j-index];
     }
+#ifdef PINOCCHIO
+    index=120+0*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      left_foot_wrench_[i][j-index] = data_astate_[i][j];
+    }
+    index=120+1*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      right_foot_wrench_[i][j-index] = data_astate_[i][j];
+    }
+    index=120+2*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      left_hand_wrench_[i][j-index] = data_astate_[i][j];
+    }
+    index=120+3*6;
+    for (unsigned int j = index ; j < index+6 ; ++j )
+    {
+      right_hand_wrench_[i][j-index] = data_astate_[i][j];
+    }
+#endif
   }
-  // Create a temporary vector q_motor
+  // Filter q, torques, external wrench with the same filter
   std::vector< std::vector<double> > q_tmp = q_ ;
-  IIF.filter(q_,q_tmp);
+  IIF.filter(q_tmp,q_);
   std::vector< std::vector<double> > torques_tmp = torques_ ;
-  IIF.filter(torques_,torques_tmp);
+  IIF.filter(torques_tmp,torques_);
 
-  // compute the velocity of the joints by finite differenziation
-  derivation(q_tmp,dq_);
+#ifdef PINOCCHIO
+  std::vector< std::vector<double> > left_foot_wrench_tmp = left_foot_wrench_ ;
+  std::vector< std::vector<double> > right_foot_wrench_tmp = right_foot_wrench_ ;
+  std::vector< std::vector<double> > left_hand_wrench_tmp = left_hand_wrench_ ;
+  std::vector< std::vector<double> > right_hand_wrench_tmp = right_hand_wrench_ ;
+  IIF.filter(left_foot_wrench_tmp,left_foot_wrench_);
+  IIF.filter(right_foot_wrench_tmp,right_foot_wrench_);
+  IIF.filter(left_hand_wrench_tmp,left_hand_wrench_);
+  IIF.filter(right_hand_wrench_tmp,right_hand_wrench_);
+#endif
+  // compute the velocity of the joints by finite differentiation
+  derivation(q_,dq_);
+  // filter the velocity
+  std::vector< std::vector<double> > dq_tmp = dq_ ;
+  IIF.filter(dq_tmp,dq_);
+  dq_tmp = dq_ ;
+  IIF.filter(dq_tmp,dq_);
 
-  // compute the acceleration of the joints by finite differenziation
+  // compute the acceleration of the joints by finite differentiation
   derivation(dq_,ddq_);
+  // filter the acceleration
+  std::vector< std::vector<double> > ddq_tmp = ddq_ ;
+  IIF.filter(ddq_tmp,ddq_);
+  // filter the acceleration
+  ddq_tmp = ddq_ ;
+  IIF.filter(ddq_tmp,ddq_);
 
   // dump all the files
-  //    string dump = experienceName_+"_q.dat" ;
-  //    dumpData( dump , q_ ) ;
-  //    dump = experienceName_ + "_dq_.dat" ;
-  //    dumpData( dump , dq_ ) ;
-  //    dump = experienceName_ + "_ddq_.dat" ;
-  //    dumpData( dump , ddq_ ) ;
-  //    dump = experienceName_ + "_torques_filter.dat" ;
-  //    dumpData( dump , torques_tmp ) ;
-  //    dump = experienceName_ + "_torques.dat" ;
-  //    dumpData( dump , torques_ ) ;
-  //    dump = experienceName_ + "_q_filter.dat" ;
-  //    dumpData( dump , q_tmp ) ;
-  //    dump = experienceName_ + "_q_ref.dat" ;
-  //    dumpData( dump , q_ref_ ) ;
-  //    dump = experienceName_ + "_q_astate.dat" ;
-  //    dumpData( dump , q_astate_ ) ;
+  string dump ;
+  dump = experienceName_+"_q.dat" ;
+  dump_.dump( dump , q_ ) ;
 
+  dump = experienceName_ + "_dq.dat" ;
+  dump_.dump( dump , dq_ ) ;
+
+  dump = experienceName_ + "_ddq.dat" ;
+  dump_.dump( dump , ddq_ ) ;
+
+  dump = experienceName_ + "_torques_raw.dat" ;
+  dump_.dump( dump , torques_tmp ) ;
+
+  dump = experienceName_ + "_torques.dat" ;
+  dump_.dump( dump , torques_ ) ;
+
+  dump = experienceName_ + "_q_raw.dat" ;
+  dump_.dump( dump , q_tmp ) ;
+
+  dump = experienceName_ + "_q_ref.dat" ;
+  dump_.dump( dump , q_ref_ ) ;
+
+  dump = experienceName_ + "_q_astate.dat" ;
+  dump_.dump( dump , q_astate_ ) ;
+#ifdef PINOCCHIO
+  dump = experienceName_+"_left_foot_wrench.dat" ;
+  dump_.dump( dump , left_foot_wrench_   ) ;
+
+  dump = experienceName_+"_left_foot_wrench_raw.dat" ;
+  dump_.dump( dump , left_foot_wrench_tmp   ) ;
+
+  dump = experienceName_+"_right_foot_wrench.dat" ;
+  dump_.dump( dump , right_foot_wrench_   ) ;
+
+  dump = experienceName_+"_right_foot_wrench_raw.dat" ;
+  dump_.dump( dump , right_foot_wrench_tmp   ) ;
+#endif
   data_astate_.clear();
   data_ref_.clear();
   return 0;
@@ -344,11 +440,21 @@ int Experience::defineBeginEndIndexes()
   vector< vector<double> > tmp_torques = torques_ ;
   vector< vector<double> > tmp_q = q_ ;
   vector< vector<double> > tmp_dq = dq_ ;
-
-  torques_.resize(endData_-beginData_);
-  q_.resize(endData_-beginData_);
-  dq_.resize(endData_-beginData_);
-
+#ifdef PINOCCHIO
+  vector< vector<double> > tmp_left_foot_wrench  = left_foot_wrench_  ;
+  vector< vector<double> > tmp_right_foot_wrench = right_foot_wrench_ ;
+  vector< vector<double> > tmp_left_hand_wrench  = left_hand_wrench_  ;
+  vector< vector<double> > tmp_right_hand_wrench = right_hand_wrench_ ;
+#endif
+  torques_          .resize(endData_-beginData_);
+  q_                .resize(endData_-beginData_);
+  dq_               .resize(endData_-beginData_);
+#ifdef PINOCCHIO
+  left_foot_wrench_ .resize(endData_-beginData_);
+  right_foot_wrench_.resize(endData_-beginData_);
+  left_hand_wrench_ .resize(endData_-beginData_);
+  right_hand_wrench_.resize(endData_-beginData_);
+#endif
   vector< vector<double> > tmp_q_ref = q_ref_ ;
   vector< vector<double> > tmp_q_astate = q_astate_ ;
 
@@ -363,7 +469,27 @@ int Experience::defineBeginEndIndexes()
     if(!ignore_ref_)
       q_ref_[k] = tmp_q_ref[k+beginData_] ;
     q_astate_[k] = tmp_q_astate[k+beginData_] ;
+#ifdef PINOCCHIO
+    left_foot_wrench_ [k] = tmp_left_foot_wrench [k+beginData_];
+    right_foot_wrench_[k] = tmp_right_foot_wrench[k+beginData_];
+    left_hand_wrench_ [k] = tmp_left_hand_wrench [k+beginData_];
+    right_hand_wrench_[k] = tmp_right_hand_wrench[k+beginData_];
+#endif
   }
+  // dump all the files
+  string dump ;
+  dump = experienceName_+"_q_cut.dat" ;
+  dump_.dump( dump , q_ ) ;
+  dump = experienceName_ + "_dq_cut.dat" ;
+  dump_.dump( dump , dq_ ) ;
+  dump = experienceName_ + "_torques_cut.dat" ;
+  dump_.dump( dump , torques_ ) ;
+#ifdef PINOCCHIO
+  dump = experienceName_+"_left_foot_wrench_cut.dat" ;
+  dump_.dump( dump , left_foot_wrench_   ) ;
+  dump = experienceName_+"_right_foot_wrench_cut.dat" ;
+  dump_.dump( dump , right_foot_wrench_   ) ;
+#endif
   return 0 ;
 }
 
@@ -388,28 +514,38 @@ int Experience::computeTheEnergy()
   vector< vector<double> > energyOfWalk ( N , vector<double> (ddl_,0) );
   integration(powerOfWalk_,energyOfWalk);
 
-  EnergyOfMotor_J_m_s_ = 0.0;
-  EnergyOfWalking_J_m_s_ = 0.0;
-  double EnergyOfMotorDDL = 0.0;
-  double EnergyOfWalkingDDL = 0.0;
-  for (unsigned int j = 0 ; j < ddl_ ; ++j )
+  if (walkedDistanced_ <= 0)
   {
-    EnergyOfMotorDDL += energyOfMotors.back()[j] ;
-    EnergyOfWalkingDDL += energyOfWalk.back()[j] ;
+    EnergyOfMotor_J_m_s_= 0;
+    EnergyOfWalking_J_m_s_ = 0;
+    MechaCostOfTransport_ = 0;
+    CostOfTransport_ = 0;
+    FroudeNumber_ = 0;
   }
+  else
+  {
+    EnergyOfMotor_J_m_s_ = 0.0;
+    EnergyOfWalking_J_m_s_ = 0.0;
+    double EnergyOfMotorDDL = 0.0;
+    double EnergyOfWalkingDDL = 0.0;
+    for (unsigned int j = 0 ; j < ddl_ ; ++j )
+    {
+      EnergyOfMotorDDL += energyOfMotors.back()[j] ;
+      EnergyOfWalkingDDL += energyOfWalk.back()[j] ;
+    }
 
-  EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL   /walkedDistanced_
-                           /(energyOfMotors.size()*0.005) ;
-  EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL /walkedDistanced_
-                           /(energyOfMotors.size()*0.005) ;
+    EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL   /walkedDistanced_
+                             /(energyOfMotors.size()*0.005) ;
+    EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL /walkedDistanced_
+                             /(energyOfMotors.size()*0.005) ;
 
-  double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
+    double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
 
-  MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
-  CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
+    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
+    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
 
-  FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
-
+    FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
+  }
   return 0 ;
 }
 
@@ -506,7 +642,7 @@ int Experience::detectFall()
     //assert(avrg_err_window<0.024);
   }
 
-  if (maxTrackingError_>0.01)
+  if (maxTrackingError_>0.007)
   {
 //    cout << "max_error = " << max_error
 //         << " between time=[" << time_max_error << ", "
@@ -522,3 +658,164 @@ int Experience::detectFall()
 //  cout << "return = " << ret << endl ;
   return ret ;
 }
+
+#ifdef PINOCCHIO
+int Experience::contact_detection(const std::vector< std::vector<double> > & wrench,
+                                  std::vector< int > & isInContact)
+{
+  isInContact.resize(wrench.size());
+  // detect if foot is in contact :
+  double mg = WeightOfRobot_;
+  // Fz > 25% RobotWeight N
+  isInContact[0] = wrench[0][2] > 40.0/100.0 * mg ;
+  for (unsigned n=1 ; n<isInContact.size() ;++n)
+  {
+    double evolution = wrench[n][2]-wrench[n-1][2];
+    if (isInContact[n-1] == 1)
+    {
+      if (evolution < 0 && wrench[n][2] < 40.0/100.0 * mg)
+      {
+        isInContact[n] = 0 ;
+      }else{
+        isInContact[n] = 1 ;
+      }
+    }else if (isInContact[n-1] == 0){
+      if (evolution > 0 && wrench[n][2] > 25.0/100.0 * mg)
+      {
+        isInContact[n] = 1 ;
+      }else{
+        isInContact[n] = 0 ;
+      }
+    }
+    else{
+      isInContact[n] = 0 ;
+    }
+//    std::cout << wrench[n][2] << " "
+//              << isInContact [n] << " "
+//              << std::endl ;
+  }
+  return 0;
+}
+
+Eigen::VectorXd Experience::fromVrmlMotor2PinocchioJoint(std::vector<double> vrml)
+{
+  assert (vrml.size() == hrp2motors_->joint_name_.size());
+  Eigen::VectorXd pin ;
+  pin.resize(hrp2motors_->joint_name_.size());
+  for(unsigned i=0 ; i<hrp2motors_->joint_name_.size() ; ++i)
+  {
+    se3::JointIndex pin_index = robotModel_->getJointId(
+                                  hrp2motors_->joint_name_[i]) - 2 ;
+    pin(pin_index) = vrml[i] / hrp2motors_->gear_ratio_[i];
+  }
+  return pin ;
+}
+
+int Experience::odometrie()
+{
+  unsigned int N = q_ref_.size() ;
+  // detect if foot is in contact :
+  contact_detection(right_foot_wrench_,right_foot_isInContact_);
+  contact_detection(left_foot_wrench_,left_foot_isInContact_);
+  string dump2 ;
+  dump2 = experienceName_+"_lf_isInContact_cut.dat" ;
+  dump_.dump( dump2, left_foot_isInContact_);
+  dump2 = experienceName_+"_rf_isInContact_cut.dat" ;
+  dump_.dump( dump2 , right_foot_isInContact_);
+
+  // reset config vectors
+  world_M_base_.resize(N);
+  world_V_base_.resize(N);
+  q_odo_.setZero();  jac_lf_.setZero();
+  dq_odo_.setZero(); jac_rf_.setZero();
+  // setup some constants
+  se3::Model::FrameIndex lf_id = robotModel_->getFrameId("l_ankle");
+  se3::Model::FrameIndex rf_id = robotModel_->getFrameId("r_ankle");
+  Eigen::Matrix<double,6,1> world_V_lf_base, world_V_rf_base ;
+  double fz_rf = 0.0 ;
+  double fz_lf = 0.0 ;
+  world_M_base_[0] = se3::SE3::Identity() ;
+  world_V_base_[0].setZero();
+  // compute the velocity of the feet on the base frame
+  for(unsigned n=1 ; n<N ; ++n)
+  {
+    // update the configuration
+    q_odo_.segment(7,ddl_) = fromVrmlMotor2PinocchioJoint(q_[n]);
+    q_odo_.head<3>() = world_M_base_[n-1].translation();
+    q_odo_.segment<4>(3) =
+        Eigen::Quaternion<double>(world_M_base_[n-1].rotation()).coeffs() ;
+    // update the velocity
+    dq_odo_.head<6>().fill(0.) ;
+    dq_odo_.segment(6,ddl_) = fromVrmlMotor2PinocchioJoint(dq_[n]);
+    // update the z forces
+    fz_rf = right_foot_wrench_[n][2] ;
+    fz_lf = right_foot_wrench_[n][2] ;
+    // compute the jacobians
+    se3::framesForwardKinematics(*robotModel_,*robotData_,q_odo_);
+    se3::computeJacobians(*robotModel_,*robotData_,q_odo_) ;
+    se3::getFrameJacobian<false>(*robotModel_,*robotData_,lf_id,jac_lf_);
+    se3::getFrameJacobian<false>(*robotModel_,*robotData_,rf_id,jac_rf_);
+    se3::FrameIndex lf_id = robotModel_->getFrameId("l_ankle");
+    se3::FrameIndex rf_id = robotModel_->getFrameId("r_ankle");
+    se3::SE3 world_M_lf_ = robotData_->oMf[lf_id] ;
+    se3::SE3 world_M_rf_ = robotData_->oMf[rf_id] ;
+    // compute the velocity of the base relatif to the stance foot
+    world_V_lf_base = /*world_M_lf_.toActionMatrix() * */ (- jac_lf_ * dq_odo_) ;
+    world_V_rf_base = /*world_M_rf_.toActionMatrix() * */ (- jac_rf_ * dq_odo_) ;
+
+    if (left_foot_isInContact_[n] == 1)
+    {
+      //cout << "left support" << endl ;
+      world_V_base_[n] = world_V_lf_base ;
+    }
+    else if (right_foot_isInContact_[n] == 1)
+    {
+      //cout << "right support" << endl ;
+      world_V_base_[n] = world_V_rf_base ;
+    }else
+    {
+      //cout << "ARGH NO SUPPORT" << endl ;
+      world_V_base_[n].setZero() ;
+    }
+    world_M_base_[n] = se3::exp6(world_V_base_[n]*0.005).act(world_M_base_[n-1]) ;
+  }
+  string dump ;
+  dump = experienceName_+"_world_V_base.dat" ;
+  dump_.dump( dump , world_V_base_ ) ;
+  dump = experienceName_+"_world_M_base.dat" ;
+  dump_.dump( dump , world_M_base_ ) ;
+  std::vector<se3::SE3>::iterator it = world_M_base_.end()-1;
+  walkedDistanced_ = (*it).translation()[0];
+
+//  world_V_base_filtered_ = world_V_base_ ;
+//  IIF.filter(world_V_base_,world_V_base_filtered_);
+//  dump = experienceName_+"_world_V_basef.dat" ;
+//  dump_.dump( dump , world_V_base_filtered_ ) ;
+//  for(unsigned n=1 ; n<N ; ++n)
+//  {
+//    // update the configuration
+//    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
+//    {
+//      q_odo_(7+ddl) = q_[n][ddl] ;
+//    }
+//    q_odo_.head<3>() = world_M_base_[n-1].translation();
+////    q_odo_.segment<4>(3) =
+////        Eigen::Quaternion<double>(world_M_base_[n-1].rotation()).coeffs() ;
+////    dq_odo_.head<6>() = world_V_base_filtered_[n] ;
+//    for (unsigned ddl=0 ; ddl<ddl_ ; ++ddl)
+//    {
+//      dq_odo_(6+ddl) = dq_[n][ddl] ;
+//    }
+//    Eigen::VectorXd q = se3::integrate(*robotModel_,q_odo_,dq_odo_*0.005);
+//    Eigen::Vector3d p = q.head<3>() ;
+//    Eigen::Matrix3d R = Eigen::Quaternion<double>(q.segment<4>(3))
+//                          .toRotationMatrix() ;
+//    world_M_base_[n].translation(p);
+//    world_M_base_[n].rotation(R);
+//    cout << world_V_base_filtered_[n].transpose() << endl ;
+//    //cout << world_M_base_[n] << endl ;
+//  }
+
+  return 0;
+}
+#endif
