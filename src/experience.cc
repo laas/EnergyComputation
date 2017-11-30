@@ -353,7 +353,7 @@ int Experience::readData()
 
   // dump all the files
   string dump ;
-  dump = experienceName_+"_q.dat" ;
+  /*dump = experienceName_+"_q.dat" ;
   dump_.dump( dump , q_ ) ;
 
   dump = experienceName_ + "_dq.dat" ;
@@ -388,7 +388,7 @@ int Experience::readData()
 
   dump = experienceName_+"_right_foot_wrench_raw.dat" ;
   dump_.dump( dump , right_foot_wrench_tmp   ) ;
-#endif
+#endif*/
   data_astate_.clear();
   data_ref_.clear();
   return 0;
@@ -477,7 +477,7 @@ int Experience::defineBeginEndIndexes()
 #endif
   }
   // dump all the files
-  string dump ;
+ /* string dump ;
   dump = experienceName_+"_q_cut.dat" ;
   dump_.dump( dump , q_ ) ;
   dump = experienceName_ + "_dq_cut.dat" ;
@@ -489,7 +489,7 @@ int Experience::defineBeginEndIndexes()
   dump_.dump( dump , left_foot_wrench_   ) ;
   dump = experienceName_+"_right_foot_wrench_cut.dat" ;
   dump_.dump( dump , right_foot_wrench_   ) ;
-#endif
+#endif*/
   return 0 ;
 }
 
@@ -514,8 +514,9 @@ int Experience::computeTheEnergy()
   vector< vector<double> > energyOfWalk ( N , vector<double> (ddl_,0) );
   integration(powerOfWalk_,energyOfWalk);
 
-  if (walkedDistanced_ <= 0)
+  if (walkedDistanced_ < 0.005)
   {
+    walkedDistanced_= 0;
     EnergyOfMotor_J_m_s_= 0;
     EnergyOfWalking_J_m_s_ = 0;
     MechaCostOfTransport_ = 0;
@@ -642,7 +643,7 @@ int Experience::detectFall()
     //assert(avrg_err_window<0.024);
   }
 
-  if (maxTrackingError_>0.007)
+  if (maxTrackingError_>0.011)
   {
 //    cout << "max_error = " << max_error
 //         << " between time=[" << time_max_error << ", "
@@ -718,10 +719,10 @@ int Experience::odometrie()
   contact_detection(right_foot_wrench_,right_foot_isInContact_);
   contact_detection(left_foot_wrench_,left_foot_isInContact_);
   string dump2 ;
-  dump2 = experienceName_+"_lf_isInContact_cut.dat" ;
+  /*dump2 = experienceName_+"_lf_isInContact_cut.dat" ;
   dump_.dump( dump2, left_foot_isInContact_);
   dump2 = experienceName_+"_rf_isInContact_cut.dat" ;
-  dump_.dump( dump2 , right_foot_isInContact_);
+  dump_.dump( dump2 , right_foot_isInContact_);*/
 
   // reset config vectors
   world_M_base_.resize(N);

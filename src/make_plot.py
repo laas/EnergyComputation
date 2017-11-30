@@ -7,6 +7,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 import matplotlib.pyplot as plt
 from decimal import Decimal
+from math import *
 
 class XP :
     def __init__(self):
@@ -141,35 +142,144 @@ def discrimin_xp(header_file,header_line,list_lines_split):
 
 def mean_xp(xp_list) :
     list_mean_xp = []
+    xp_index_to_rm =[]
     for xp in xp_list :
-        list_mean_xp.append((np.mean(xp.WalkedDistance_list),
-                        len(xp.WalkedDistance_list)/len(xp.Fall_list), # success rate
-                        np.mean(xp.MaxtrackingError_list),
-                        np.mean(xp.DurationOfTheExperiment_list),
-                        np.mean(xp.EnergyOfMotors_list),
-                        np.mean(xp.EnergyOfWalking_list),
-                        np.mean(xp.CostOfTransport_list),
-                        np.mean(xp.MechaCostOfTransport_list),
-                        np.mean(xp.Froude_list),
-                        xp.algo,
-                        xp.setup))
-        print "np.mean(xp.CostOfTransport_list) : ",np.mean(xp.CostOfTransport_list)
-        if np.mean(xp.CostOfTransport_list) < 0 :
-            print "list : " , xp.CostOfTransport_list
-            print xp
-    print "list_mean_xp : ",list_mean_xp
+        print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        print xp.algo," ", xp.setup
+        print " LEN : ",len(xp.WalkedDistance_list),len(xp.Fall_list),len(xp.MaxtrackingError_list),len(xp.DurationOfTheExperiment_list),len(xp.EnergyOfWalking_list),len(xp.EnergyOfMotors_list),len(xp.CostOfTransport_list),len(xp.MechaCostOfTransport_list),len(xp.Froude_list)
+        print "before rm_absurd_values"
+        skip_this_xp = rm_absurd_values(xp)
+        print " LEN : ",len(xp.WalkedDistance_list),len(xp.Fall_list),len(xp.MaxtrackingError_list),len(xp.DurationOfTheExperiment_list),len(xp.EnergyOfWalking_list),len(xp.EnergyOfMotors_list),len(xp.CostOfTransport_list),len(xp.MechaCostOfTransport_list),len(xp.Froude_list)
+        print "after rm_absurd_values"
+        temp_Fall_list = {i: xp.Fall_list.count(i) for i in xp.Fall_list}
+        print temp_Fall_list
+        try :
+            nb_no_fall = temp_Fall_list[False] # hasn't  fallen
+        except:
+            try :
+                nb_no_fall = len(xp.WalkedDistance_list) - temp_Fall_list[True]
+            except :
+                print "!!!!! no usable value in this xp : ", xp.algo, " ", xp.setup
+                skip_this_xp = True
+        #print "nb_of_xp : ", nb_of_xp
+        if not skip_this_xp :
+            nb_of_xp = len(xp.WalkedDistance_list)
+            #print "nb_of_xp : ", nb_of_xp
+            list_mean_xp.append((np.mean(xp.WalkedDistance_list),
+                            float(nb_no_fall)/nb_of_xp, # success rate
+                            np.mean(xp.MaxtrackingError_list),
+                            np.mean(xp.DurationOfTheExperiment_list),
+                            np.mean(xp.EnergyOfMotors_list),
+                            np.mean(xp.EnergyOfWalking_list),
+                            np.mean(xp.CostOfTransport_list),
+                            np.mean(xp.MechaCostOfTransport_list),
+                            np.mean(xp.Froude_list),
+                            xp.algo,
+                            xp.setup,
+                            nb_of_xp))
+            print "success rate for ",xp.algo," ", xp.setup," : ",nb_no_fall
+            print "xp.WalkedDistance_list :", xp.WalkedDistance_list
+        else :
+            xp_index_to_rm.append(xp_list.index(xp))
+        #print "nb_of_xp : ", nb_of_xp
+    #remove xp with no valid trials:
+    for index in reversed(xp_index_to_rm) :
+        print "removed xp : ",xp_list[index].algo," ",xp_list[index].setup
+        xp_list.pop(index)
+    for idx,xp in enumerate(xp_list):
+        print xp.algo," ",xp.setup
+        if xp.algo=="15cm" and xp.setup=="10°C":
+            print "success rate for 15cm 10deg : ", list_mean_xp[idx]
+
+    #print "list_mean_xp : ",list_mean_xp
     return list_mean_xp
+
+def rm_absurd_values(xp):
+    absurd_index_list = []
+    #print "before xp.WalkedDistance_list : ", xp.WalkedDistance_list
+    if xp.algo=="kawada":
+        pass
+    else :
+        for distance in (xp.WalkedDistance_list):
+            if distance == 0 :
+                absurd_index_list.append(xp.WalkedDistance_list.index(distance))
+                print "+ experiment will be removed in ", xp.algo, " ", xp.setup
+                print "+ walked distance is 0 , index : ",absurd_index_list[-1]
+        for absurd_index in reversed(absurd_index_list):
+            xp.WalkedDistance_list.pop(absurd_index)
+            xp.Fall_list.pop(absurd_index)
+            xp.MaxtrackingError_list.pop(absurd_index)
+            xp.DurationOfTheExperiment_list.pop(absurd_index)
+            xp.EnergyOfMotors_list.pop(absurd_index)
+            xp.EnergyOfWalking_list.pop(absurd_index)
+            xp.CostOfTransport_list.pop(absurd_index)
+            xp.MechaCostOfTransport_list.pop(absurd_index)
+            xp.Froude_list.pop(absurd_index)
+    if len(xp.WalkedDistance_list) == 0:
+        return True  # skip_this_xp
+
+    absurd_index_list = []
+    #print "before duration over 200 : ", xp.WalkedDistance_list
+    if xp.algo=="kawada" or xp.setup=="Slopes":
+        pass
+    else :
+        for duration in (xp.DurationOfTheExperiment_list):
+            if duration > 200:
+                absurd_index_list.append(xp.DurationOfTheExperiment_list.index(duration))
+                print "absurd index : ", absurd_index_list[-1]
+                print "# experiment has been removed in ", xp.algo, " ", xp.setup
+                print "# duration over 200 (Translations and slopes excluded) : ", duration
+        for absurd_index in reversed(absurd_index_list):
+            xp.WalkedDistance_list.pop(absurd_index)
+            xp.Fall_list.pop(absurd_index)
+            xp.MaxtrackingError_list.pop(absurd_index)
+            xp.DurationOfTheExperiment_list.pop(absurd_index)
+            xp.EnergyOfMotors_list.pop(absurd_index)
+            xp.EnergyOfWalking_list.pop(absurd_index)
+            xp.CostOfTransport_list.pop(absurd_index)
+            xp.MechaCostOfTransport_list.pop(absurd_index)
+            xp.Froude_list.pop(absurd_index)
+    if len(xp.WalkedDistance_list)==0:
+        return True #skip_this_xp
+
+    absurd_index_list = []
+    duration_variance = np.var(xp.DurationOfTheExperiment_list)
+    duration_mean = np.mean(xp.DurationOfTheExperiment_list)
+    #print "xp.DurationOfTheExperiment_list : ", xp.DurationOfTheExperiment_list
+    for duration in (xp.DurationOfTheExperiment_list) :
+        if abs(duration-duration_mean) > 3*sqrt(duration_variance):
+            absurd_index_list.append(xp.DurationOfTheExperiment_list.index(duration))
+            print "absurd index : ", absurd_index_list[-1]
+            print "* experiment has been removed in ",xp.algo," ",xp.setup
+            print "* duration over 3 sigma : ",abs(duration-duration_mean)," > 3 * ",sqrt(duration_variance)
+    for absurd_index in reversed(absurd_index_list):
+        xp.WalkedDistance_list.pop(absurd_index)
+        xp.Fall_list.pop(absurd_index)
+        xp.MaxtrackingError_list.pop(absurd_index)
+        xp.DurationOfTheExperiment_list.pop(absurd_index)
+        xp.EnergyOfMotors_list.pop(absurd_index)
+        xp.EnergyOfWalking_list.pop(absurd_index)
+        xp.CostOfTransport_list.pop(absurd_index)
+        xp.MechaCostOfTransport_list.pop(absurd_index)
+        xp.Froude_list.pop(absurd_index)
+    #print "xp.DurationOfTheExperiment_list : ", xp.DurationOfTheExperiment_list
+    if len(xp.WalkedDistance_list)==0:
+        return True #skip_this_xp
+    else :
+        return False #can continue this xp
+
 
 def plot_graph(list_mean_xp,xp_list) :
     xp_tmp=XP()
-    for key in xp_tmp.algo_dico.keys() :#["hwalk"] :#xp_tmp.algo_dico.keys() :
+    for key in xp_tmp.algo_dico.keys() : #loop on algo
         fig, ax = plt.subplots(3, 3)
         plt.suptitle("Algorithm : "+key)
-        jk=0
-        for j in range(3):
-            for k in range(3):
-                y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] #cot in hwalk
-                setup_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#setpu in hwalk
+        jk=0 #place of suplot
+        for j in range(3): #1st loop place subplot
+            for k in range(3): #2nd loop subplot
+                y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
+                setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#get setup found for algo
+                nb_of_xp_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]  # get setup found for algo
                 print "y_list",y_list
                 #plt.plot(y_list)
                 #plt.show()
@@ -191,9 +301,9 @@ def plot_graph(list_mean_xp,xp_list) :
                 print "setup_tuple : ",setup_tuple
                 ax[j, k].set_xticklabels(setup_tuple)
                 ax[j, k].set_ylim((ax[j, k].get_ylim()[0],ax[j, k].get_ylim()[1]*1.1))
+                nb_points = len(y_list)
 
-
-                autolabel(rects1,ax,j,k)
+                autolabel(rects1,ax,j,k,nb_of_xp_list)
 
                 plt.show(block=False)
                 jk+=1
@@ -201,7 +311,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
     return
 
-def autolabel(rects,ax,j,k):
+def autolabel(rects,ax,j,k,nb_of_xp_list):
     """
     Attach a text label above each bar displaying its height
     """
@@ -209,11 +319,11 @@ def autolabel(rects,ax,j,k):
         height = rect.get_height()
         if height> 0.1:
             ax[j, k].text(rect.get_x() + rect.get_width()/2., height,
-                    '%s' % str('{0:.2f}'.format(height)),
+                    '%s \nnb:%s' % (str('{0:.2f}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
                     ha='center', va='bottom')
         else:
             ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
-                      '%s' % str('{0:.2E}'.format(height)),
+                      '%s \nnb:%s' % (str('{0:.2E}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
                       ha='center', va='bottom')
 
 def close_figures():
