@@ -29,6 +29,7 @@ class XP :
                          "CostOfTransport","MechaCostOfTransport","FroudeNumber"]
         self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
                                "Dimensionless","Dimensionless"]
+        self.success_rate = 0.0
 
     def __str__(self):
         attrs = vars(self)
@@ -151,22 +152,13 @@ def mean_xp(xp_list) :
         skip_this_xp = rm_absurd_values(xp)
         print " LEN : ",len(xp.WalkedDistance_list),len(xp.Fall_list),len(xp.MaxtrackingError_list),len(xp.DurationOfTheExperiment_list),len(xp.EnergyOfWalking_list),len(xp.EnergyOfMotors_list),len(xp.CostOfTransport_list),len(xp.MechaCostOfTransport_list),len(xp.Froude_list)
         print "after rm_absurd_values"
-        temp_Fall_list = {i: xp.Fall_list.count(i) for i in xp.Fall_list}
-        print temp_Fall_list
-        try :
-            nb_no_fall = temp_Fall_list[False] # hasn't  fallen
-        except:
-            try :
-                nb_no_fall = len(xp.WalkedDistance_list) - temp_Fall_list[True]
-            except :
-                print "!!!!! no usable value in this xp : ", xp.algo, " ", xp.setup
-                skip_this_xp = True
+
         #print "nb_of_xp : ", nb_of_xp
         if not skip_this_xp :
             nb_of_xp = len(xp.WalkedDistance_list)
             #print "nb_of_xp : ", nb_of_xp
             list_mean_xp.append((np.mean(xp.WalkedDistance_list),
-                            float(nb_no_fall)/nb_of_xp, # success rate
+                            xp.success_rate,
                             np.mean(xp.MaxtrackingError_list),
                             np.mean(xp.DurationOfTheExperiment_list),
                             np.mean(xp.EnergyOfMotors_list),
@@ -177,9 +169,10 @@ def mean_xp(xp_list) :
                             xp.algo,
                             xp.setup,
                             nb_of_xp))
-            print "success rate for ",xp.algo," ", xp.setup," : ",nb_no_fall
+            print "success rate for ",xp.algo," ", xp.setup," : ",xp.success_rate
             print "xp.WalkedDistance_list :", xp.WalkedDistance_list
         else :
+            print "!!!!! no usable value in this xp : ", xp.algo, " ", xp.setup
             xp_index_to_rm.append(xp_list.index(xp))
         #print "nb_of_xp : ", nb_of_xp
     #remove xp with no valid trials:
@@ -188,13 +181,25 @@ def mean_xp(xp_list) :
         xp_list.pop(index)
     for idx,xp in enumerate(xp_list):
         print xp.algo," ",xp.setup
-        if xp.algo=="15cm" and xp.setup=="10°C":
-            print "success rate for 15cm 10deg : ", list_mean_xp[idx]
+        #if xp.algo=="15cm" and xp.setup=="10°C":
+        #    print "success rate for 15cm 10deg : ", list_mean_xp[idx]
 
     #print "list_mean_xp : ",list_mean_xp
     return list_mean_xp
 
 def rm_absurd_values(xp):
+
+    temp_Fall_list = {i: xp.Fall_list.count(i) for i in xp.Fall_list}
+    print temp_Fall_list
+    try:
+        xp.success_rate = temp_Fall_list[False] / float(len(xp.Fall_list))  # hasn't  fallen
+    except:
+        try:
+            xp.success_rate = (len(xp.WalkedDistance_list) - temp_Fall_list[True]) / float(len(xp.Fall_list))
+        except:
+            print "0 success in this xp : ", xp.algo, " ", xp.setup
+            return True
+
     absurd_index_list = []
     #print "before xp.WalkedDistance_list : ", xp.WalkedDistance_list
     if xp.algo=="kawada":
@@ -265,6 +270,30 @@ def rm_absurd_values(xp):
     #print "xp.DurationOfTheExperiment_list : ", xp.DurationOfTheExperiment_list
     if len(xp.WalkedDistance_list)==0:
         return True #skip_this_xp
+
+    if xp.algo=="kawada" or xp.setup=="Pushes":#or xp.setup=="Slopes":
+        pass
+    else :
+        for idx,fall in enumerate(xp.Fall_list):
+            if fall == True:
+                absurd_index_list.append(idx)
+                print "absurd index : ", absurd_index_list[-1]
+                print "* experiment has been removed in ", xp.algo, " ", xp.setup
+                print "* robot fell in this xp (walked distance) : ", xp.WalkedDistance_list[idx]
+        print "nb of trials to remove, len xp : ", len(absurd_index_list), " ", len(xp.Fall_list)
+        for absurd_index in reversed(absurd_index_list):
+            xp.WalkedDistance_list.pop(absurd_index)
+            xp.Fall_list.pop(absurd_index)
+            xp.MaxtrackingError_list.pop(absurd_index)
+            xp.DurationOfTheExperiment_list.pop(absurd_index)
+            xp.EnergyOfMotors_list.pop(absurd_index)
+            xp.EnergyOfWalking_list.pop(absurd_index)
+            xp.CostOfTransport_list.pop(absurd_index)
+            xp.MechaCostOfTransport_list.pop(absurd_index)
+            xp.Froude_list.pop(absurd_index)
+        # print "xp.DurationOfTheExperiment_list : ", xp.DurationOfTheExperiment_list
+    if len(xp.WalkedDistance_list) == 0:
+        return True  # skip_this_xp
     else :
         return False #can continue this xp
 
