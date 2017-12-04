@@ -189,19 +189,8 @@ def mean_xp(xp_list) :
 
 def rm_absurd_values(xp):
 
-    temp_Fall_list = {i: xp.Fall_list.count(i) for i in xp.Fall_list}
-    print temp_Fall_list
-    try:
-        xp.success_rate = temp_Fall_list[False] / float(len(xp.Fall_list))  # hasn't  fallen
-    except:
-        try:
-            xp.success_rate = (len(xp.WalkedDistance_list) - temp_Fall_list[True]) / float(len(xp.Fall_list))
-        except:
-            print "0 success in this xp : ", xp.algo, " ", xp.setup
-            return True
-
     absurd_index_list = []
-    #print "before xp.WalkedDistance_list : ", xp.WalkedDistance_list
+    # remove trials with null walked distance
     if xp.algo=="kawada":
         pass
     else :
@@ -223,6 +212,7 @@ def rm_absurd_values(xp):
     if len(xp.WalkedDistance_list) == 0:
         return True  # skip_this_xp
 
+    # remove trials duration over 200s
     absurd_index_list = []
     #print "before duration over 200 : ", xp.WalkedDistance_list
     if xp.algo=="kawada" or xp.setup=="Slopes":
@@ -247,6 +237,7 @@ def rm_absurd_values(xp):
     if len(xp.WalkedDistance_list)==0:
         return True #skip_this_xp
 
+    #remove trials with duration far away of the others
     absurd_index_list = []
     duration_variance = np.var(xp.DurationOfTheExperiment_list)
     duration_mean = np.mean(xp.DurationOfTheExperiment_list)
@@ -267,11 +258,23 @@ def rm_absurd_values(xp):
         xp.CostOfTransport_list.pop(absurd_index)
         xp.MechaCostOfTransport_list.pop(absurd_index)
         xp.Froude_list.pop(absurd_index)
-    #print "xp.DurationOfTheExperiment_list : ", xp.DurationOfTheExperiment_list
     if len(xp.WalkedDistance_list)==0:
         return True #skip_this_xp
 
-    if xp.algo=="kawada" or xp.setup=="Pushes":#or xp.setup=="Slopes":
+    # calculate success rate and remove xp without any success
+    temp_Fall_list = {i: xp.Fall_list.count(i) for i in xp.Fall_list}
+    print temp_Fall_list
+    try:
+        xp.success_rate = temp_Fall_list[False] / float(len(xp.Fall_list))  # hasn't  fallen
+    except:
+        try:
+            xp.success_rate = (len(xp.WalkedDistance_list) - temp_Fall_list[True]) / float(len(xp.Fall_list))
+        except:
+            print "0 success in this xp : ", xp.algo, " ", xp.setup
+            return True
+
+    # remove trials where the robot has fallen
+    if xp.algo=="kawada" or xp.setup=="Pushes"or (xp.algo=="PG" and xp.setup=="10°C"):
         pass
     else :
         for idx,fall in enumerate(xp.Fall_list):
