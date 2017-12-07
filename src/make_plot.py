@@ -23,13 +23,14 @@ class XP :
         self.algo = ""
         self.setup = ""
         self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"PG":4,"Beam":5,"kawada":6}
-        self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations':5}
+        self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations\nFB':5,'Translations\nSIDE':6}
         self.kpi_list = ["WalkedDistance","SuccessRate","MaxtrackingError",
                          "DurationOfTheExperiment","EnergyOfMotors","EnergyOfWalking",
                          "CostOfTransport","MechaCostOfTransport","FroudeNumber"]
         self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
                                "Dimensionless","Dimensionless"]
         self.success_rate = 0.0
+        self.headers = []
 
     def __str__(self):
         attrs = vars(self)
@@ -95,8 +96,26 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         else :
             print "no algo pattern found in this line, \n",header_line[i]
             sys.exit(1)
-        if previous_algo != current_algo :
-            print "new xp detected, algo : ", current_algo
+
+        print header_line[i]
+        if header_line[i].find("degrees") != -1:
+            deg_index = header_line[i].find("degrees")
+            current_setup = header_line[i][(deg_index-2):deg_index]+"°C"
+        elif header_line[i].find("Bearing") != -1:
+            current_setup = "Bearing"
+        elif header_line[i].find("Pushes") != -1:
+            current_setup = "Pushes"
+        elif header_line[i].find("Slopes") != -1:
+            current_setup = "Slopes"
+        elif header_line[i].find("translation") != -1 and header_line[i].find("FB") != -1:
+            current_setup = "Translations\nFB"
+        elif header_line[i].find("translation") != -1 and header_line[i].find("SIDE") != -1:
+            current_setup = "Translations\nSIDE"
+        else :
+            current_setup = "nothing"
+
+        if previous_algo != current_algo or previous_setup!=current_setup :
+            print "new xp detected, algo : ", current_algo, " setup : ",current_setup
             xp = XP()
             xp.algo = current_algo
             xp_list.append(xp)
@@ -110,38 +129,22 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         xp_list[-1].CostOfTransport_list.append(list_lines_split[i][6])
         xp_list[-1].MechaCostOfTransport_list.append(list_lines_split[i][7])
         xp_list[-1].Froude_list.append(list_lines_split[i][8])
+        xp_list[-1].headers.append(header_line[i])
 
-        if header_line[i].find("degrees") != -1:
-            deg_index = header_line[i].find("degrees")
-            current_setup = header_line[i][(deg_index-2):deg_index]+"°C"
-        elif header_line[i].find("Bearing") != -1:
-            current_setup = "Bearing"
-        elif header_line[i].find("Pushes") != -1:
-            current_setup = "Pushes"
-        elif header_line[i].find("Slopes") != -1:
-            current_setup = "Slopes"
-        elif header_line[i].find("Translations") != -1:
-            current_setup = "Translations"
-        else :
-            current_setup = "nothing"
         xp_list[-1].setup = current_setup
-
+        print  xp_list[-1].algo," ", xp_list[-1].setup
         previous_algo = current_algo
-
-        '''xp_list.append([np.mean(WalkedDistance),
-                        len(WalkedDistance)/len(Fall), # success rate
-                        np.mean(MaxtrackingError),
-                        np.mean(DurationOfTheExperiment),
-                        np.mean(EnergyOfMotors),
-                        np.mean(EnergyOfWalking),
-                        np.mean(CostOfTransport),
-                        np.mean(MechaCostOfTransport),
-                        np.mean(Froude)])'''
+        previous_setup = current_setup
         print "xp_list[",i,"] : ", len(xp_list)
-    #    print i, xp_list[i]
+        #for xp in xp_list:
+        #    print "xp ::: ", xp.algo, " ", xp.setup
+    #for xp in xp_list:
+    #    print "xp ::: ", xp.algo," ", xp.setup
     return xp_list
 
 def mean_xp(xp_list) :
+    #for xp in xp_list:
+    #    print "xp ::: ", xp.algo," ", xp.setup
     list_mean_xp = []
     xp_index_to_rm =[]
     for xp in xp_list :
@@ -238,26 +241,29 @@ def rm_absurd_values(xp):
         return True #skip_this_xp
 
     #remove trials with duration far away of the others
-    absurd_index_list = []
-    duration_variance = np.var(xp.DurationOfTheExperiment_list)
-    duration_mean = np.mean(xp.DurationOfTheExperiment_list)
-    #print "xp.DurationOfTheExperiment_list : ", xp.DurationOfTheExperiment_list
-    for duration in (xp.DurationOfTheExperiment_list) :
-        if abs(duration-duration_mean) > 3*sqrt(duration_variance):
-            absurd_index_list.append(xp.DurationOfTheExperiment_list.index(duration))
-            print "absurd index : ", absurd_index_list[-1]
-            print "* experiment has been removed in ",xp.algo," ",xp.setup
-            print "* duration over 3 sigma : ",abs(duration-duration_mean)," > 3 * ",sqrt(duration_variance)
-    for absurd_index in reversed(absurd_index_list):
-        xp.WalkedDistance_list.pop(absurd_index)
-        xp.Fall_list.pop(absurd_index)
-        xp.MaxtrackingError_list.pop(absurd_index)
-        xp.DurationOfTheExperiment_list.pop(absurd_index)
-        xp.EnergyOfMotors_list.pop(absurd_index)
-        xp.EnergyOfWalking_list.pop(absurd_index)
-        xp.CostOfTransport_list.pop(absurd_index)
-        xp.MechaCostOfTransport_list.pop(absurd_index)
-        xp.Froude_list.pop(absurd_index)
+    if xp.algo=="kawada":
+        pass
+    else:
+        absurd_index_list = []
+        duration_variance = np.var(xp.DurationOfTheExperiment_list)
+        duration_mean = np.mean(xp.DurationOfTheExperiment_list)
+        #print "xp.DurationOfTheExperiment_list : ", xp.DurationOfTheExperiment_list
+        for duration in (xp.DurationOfTheExperiment_list) :
+            if abs(duration-duration_mean) > 3*sqrt(duration_variance):
+                absurd_index_list.append(xp.DurationOfTheExperiment_list.index(duration))
+                print "absurd index : ", absurd_index_list[-1]
+                print "* experiment has been removed in ",xp.algo," ",xp.setup
+                print "* duration over 3 sigma : ",abs(duration-duration_mean)," > 3 * ",sqrt(duration_variance)
+        for absurd_index in reversed(absurd_index_list):
+            xp.WalkedDistance_list.pop(absurd_index)
+            xp.Fall_list.pop(absurd_index)
+            xp.MaxtrackingError_list.pop(absurd_index)
+            xp.DurationOfTheExperiment_list.pop(absurd_index)
+            xp.EnergyOfMotors_list.pop(absurd_index)
+            xp.EnergyOfWalking_list.pop(absurd_index)
+            xp.CostOfTransport_list.pop(absurd_index)
+            xp.MechaCostOfTransport_list.pop(absurd_index)
+            xp.Froude_list.pop(absurd_index)
     if len(xp.WalkedDistance_list)==0:
         return True #skip_this_xp
 
@@ -277,6 +283,7 @@ def rm_absurd_values(xp):
     if xp.algo=="kawada" or xp.setup=="Pushes"or (xp.algo=="PG" and xp.setup=="10°C"):
         pass
     else :
+        absurd_index_list = []
         for idx,fall in enumerate(xp.Fall_list):
             if fall == True:
                 absurd_index_list.append(idx)
@@ -306,40 +313,92 @@ def plot_graph(list_mean_xp,xp_list) :
     for key in xp_tmp.algo_dico.keys() : #loop on algo
         fig, ax = plt.subplots(3, 3)
         plt.suptitle("Algorithm : "+key)
-        jk=0 #place of suplot
-        for j in range(3): #1st loop place subplot
-            for k in range(3): #2nd loop subplot
-                y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
-                setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#get setup found for algo
-                nb_of_xp_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]  # get setup found for algo
-                print "y_list",y_list
-                #plt.plot(y_list)
-                #plt.show()
-                y_tuple = tuple(y_list)
-                setup_tuple = tuple(setup_list)
-                N = len(y_tuple)
+        if key=="kawada":
+            fig_list=plt.get_fignums()
+            plt.close(fig_list[-1])
+            fig, ax = plt.subplots(1, 3)
+            print "enter in plotting kawada"
+            for k in range(3):
 
-                ind = np.arange(N)  # the x locations for the groups
-                width = 0.35  # the width of the bars
+                #for setup_k in ["Translations_FB","Translations_SIDE"]:
+                    print "setup kawada (direction) : "#, setup_k
+                    y_list=[xp[k] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
+                    setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key ]#\
+                                    #and xp_list[list_mean_xp.index(xp)].setup == setup_k)]  #get setup found for algo
+                    nb_of_xp_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]  # get setup found for algo
+                    print "setup_list", setup_list
+                    print "y_list", y_list
+                    print "nb_of_xp_list",nb_of_xp_list
+                    # plt.plot(y_list)
+                    # plt.show()
+                    y_tuple = tuple(y_list)
+                    setup_tuple = tuple(setup_list)
+                    N = len(y_tuple)
 
-                #fig, ax = plt.subplots()
-                #ax[0, 0].plot(x, y)
-                rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
+                    ind = np.arange(N)  # the x locations for the groups
+                    width = 0.35  # the width of the bars
 
-                # add some text for labels, title and axes ticks
-                ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
-                ax[j, k].set_title(xp_tmp.kpi_list[jk])
-                ax[j, k].set_xticks(ind)
-                print "setup_tuple : ",setup_tuple
-                ax[j, k].set_xticklabels(setup_tuple)
-                ax[j, k].set_ylim((ax[j, k].get_ylim()[0],ax[j, k].get_ylim()[1]*1.1))
-                nb_points = len(y_list)
+                    # fig, ax = plt.subplots()
+                    # ax[0, 0].plot(x, y)
+                    rects1 = ax[k].bar(ind, y_tuple, width, color='r')
 
-                autolabel(rects1,ax,j,k,nb_of_xp_list)
+                    # add some text for labels, title and axes ticks
+                    ax[k].set_ylabel(xp_tmp.dimension_list[k])
+                    ax[k].set_title(xp_tmp.kpi_list[k])
+                    ax[k].set_xticks(ind)
+                    print "setup_tuple : ", setup_tuple
+                    ax[k].set_xticklabels(setup_tuple)
+                    ax[k].set_ylim((ax[k].get_ylim()[0], ax[k].get_ylim()[1] * 1.1))
+                    nb_points = len(y_list)
 
-                plt.show(block=False)
-                jk+=1
-                print "end loop one plot "
+                    for rect in rects1:
+                        height = rect.get_height()
+                        if height > 0.1:
+                            ax[k].text(rect.get_x() + rect.get_width() / 2., height,
+                                          '%s \nnb:%s' % (str('{0:.2f}'.format(height)), str(nb_of_xp_list[rects1.index(rect)])),
+                                          ha='center', va='bottom')
+                        else:
+                            ax[k].text(rect.get_x() + rect.get_width() / 2., height,
+                                          '%s \nnb:%s' % (str('{0:.2E}'.format(height)), str(nb_of_xp_list[rects1.index(rect)])),
+                                  ha='center', va='bottom')
+
+                    plt.show(block=False)
+                    print "end loop for kawada "
+        else :
+            jk=0 #place of subplot
+            for j in range(3): #1st loop place subplot
+                for k in range(3): #2nd loop subplot
+                    y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
+                    setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#get setup found for algo
+                    nb_of_xp_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]  # get number of trials for xp
+                    print "y_list",y_list
+                    #plt.plot(y_list)
+                    #plt.show()
+                    y_tuple = tuple(y_list)
+                    setup_tuple = tuple(setup_list)
+                    N = len(y_tuple)
+
+                    ind = np.arange(N)  # the x locations for the groups
+                    width = 0.35  # the width of the bars
+
+                    #fig, ax = plt.subplots()
+                    #ax[0, 0].plot(x, y)
+                    rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
+
+                    # add some text for labels, title and axes ticks
+                    ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
+                    ax[j, k].set_title(xp_tmp.kpi_list[jk])
+                    ax[j, k].set_xticks(ind)
+                    print "setup_tuple : ",setup_tuple
+                    ax[j, k].set_xticklabels(setup_tuple)
+                    ax[j, k].set_ylim((ax[j, k].get_ylim()[0],ax[j, k].get_ylim()[1]*1.1))
+                    nb_points = len(y_list)
+
+                    autolabel(rects1,ax,j,k,nb_of_xp_list)
+
+                    plt.show(block=False)
+                    jk+=1
+                    print "end loop one plot "
 
     return
 
