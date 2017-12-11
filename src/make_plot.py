@@ -22,7 +22,7 @@ class XP :
         self.Froude_list = []
         self.algo = ""
         self.setup = ""
-        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"PG":4,"Beam":5,"kawada":6}
+        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"NPG":4,"Beam":5,"kawada":6}
         self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations\nFB':5,'Translations\nSIDE':6}
         self.kpi_list = ["Walked distance","Success rate","Max tracking error",
                          "Duration of the experiment","Energy of motors","Energy of walking",
@@ -91,7 +91,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("hwalk") != -1:
             current_algo = "hwalk"
         elif header_line[i].find("PG") != -1:
-            current_algo = "PG"
+            current_algo = "NPG"
         elif header_line[i].find("Beam") != -1:
             current_algo = "Beam"
         elif header_line[i].find("kawada") != -1:
@@ -298,7 +298,7 @@ def rm_absurd_values(xp):
             return True
 
     # remove trials where the robot has fallen
-    if xp.algo=="kawada" or xp.setup=="Pushes"or (xp.algo=="PG" and xp.setup=="10°C"):
+    if xp.algo=="kawada" or xp.setup=="Pushes"or (xp.algo=="NPG" and xp.setup=="10°C"):
         pass
     else :
         absurd_index_list = []
@@ -430,7 +430,10 @@ def plot_graph(list_mean_xp,xp_list) :
                     #print "setup_tuple : ",setup_tuple
                     ax[j, k].set_xticklabels(setup_tuple)
                     ax[j, k].set_yscale('log')
-                    ax[j, k].set_ylim((ax[j, k].get_ylim()[0]*0.95, ax[j, k].get_ylim()[1] * 1.105))
+                    if key=="NPG" and xp_tmp.kpi_list[jk]=="Max tracking error" :
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.25))
+                    else:
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0]*0.95, ax[j, k].get_ylim()[1] * 1.105))
                     print "lim inf : ",ax[j, k].get_ylim()[0]," lim up : ",ax[j, k].get_ylim()[1]
 
                     nb_points = len(y_list)
