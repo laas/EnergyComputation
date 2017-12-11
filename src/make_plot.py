@@ -22,8 +22,11 @@ class XP :
         self.Froude_list = []
         self.algo = ""
         self.setup = ""
-        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"NPG":4,"Beam":5,"kawada":6}
-        self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations\nFB':5,'Translations\nSIDE':6}
+        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"NPG":4,"Beam":5,"kawada":6,"Stepping stones":7,
+                          "Down step":8,"Muscode":9}
+        self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations\nFB':5,'Translations\nSIDE':6,
+                           'Gravels':7,'Slip floor \nblack carpet':8,'Slip floor \ngreen carpet':9,
+                           'Slip floor \nnormal ground':10,"bricks":11,'Slopes_':12,"stairs_":13,"obstacle 20cm":14}
         self.kpi_list = ["Walked distance","Success rate","Max tracking error",
                          "Duration of the experiment","Energy of motors","Energy of walking",
                          "Cost of transport","Mecha cost of transport","Froude number"]
@@ -96,6 +99,21 @@ def discrimin_xp(header_file,header_line,list_lines_split):
             current_algo = "Beam"
         elif header_line[i].find("kawada") != -1:
             current_algo = "kawada"
+        elif header_line[i].find("SteppingStones") != -1:
+            current_algo = "Stepping stones"
+        elif header_line[i].find("gravles") != -1:
+            current_algo = "hwalk"
+        elif header_line[i].find("slipFloor") != -1:
+            current_algo = "hwalk"
+        elif header_line[i].find("climbSlope") != -1:
+            current_algo = "hwalk"
+        elif header_line[i].find("ClimbingWithTools") != -1:
+            current_algo = "10cm"
+        elif header_line[i].find("StepStairsDownSeq") != -1:
+            current_algo = "Down step"
+        elif header_line[i].find("stepOver") != -1:
+            current_algo = "Muscode"
+
         else :
             print "no algo pattern found in this line, \n",header_line[i]
             sys.exit(1)
@@ -105,15 +123,34 @@ def discrimin_xp(header_file,header_line,list_lines_split):
             deg_index = header_line[i].find("degrees")
             current_setup = header_line[i][(deg_index-2):deg_index]+"°C"
         elif header_line[i].find("Bearing") != -1:
-            current_setup = "Bearing"
+            current_setup = "Brg"#"Bearing"
         elif header_line[i].find("Pushes") != -1:
-            current_setup = "Pushes"
+            current_setup = "Psh"#"Pushes"
         elif header_line[i].find("Slopes") != -1:
-            current_setup = "Slopes"
+            current_setup = "Slp"#"Slopes"
         elif header_line[i].find("translation") != -1 and header_line[i].find("FB") != -1:
-            current_setup = "Translations_FB"
+            current_setup = "TrslFB"#"Translations_FB"
         elif header_line[i].find("translation") != -1 and header_line[i].find("SIDE") != -1:
-            current_setup = "Translations_SIDE"
+            current_setup = "TrslSD"#"Translations_SIDE"
+        elif header_line[i].find("gravles") != -1:
+            current_setup = "Grvl"#"Gravels"
+        elif header_line[i].find("slipFloor_backCarpet") != -1:
+            current_setup = "s_flB"#"Slip floor \nblack carpet"
+        elif header_line[i].find("slipFloor_greenCarpe") != -1:
+            current_setup = "s_flG"#"Slip floor \ngreen carpet"
+        elif header_line[i].find("slipFloor_normal_floor") != -1:
+            current_setup = "s_flN"#"Slip floor \nnormal ground"
+        elif header_line[i].find("SteppingStones") != -1:
+            current_setup = "Brk"#"bricks"
+        elif header_line[i].find("climbSlope") != -1:
+            current_setup = "Slp_"#"Slopes_"
+        elif header_line[i].find("ClimbingWithTools") != -1:
+            current_setup = "tool"#"stairs_"
+        elif header_line[i].find("StepStairsDownSeq") != -1:
+            current_setup = "Str_"#"stairs_"
+        elif header_line[i].find("stepOver") != -1:
+            current_setup = "obstacle 20cm"
+
             # if header_line[i].find("FB") != -1:
             #     current_direction="FB"
             # elif header_line[i].find("SIDE") != -1:
@@ -206,7 +243,7 @@ def mean_xp(xp_list) :
 def rm_absurd_values(xp):
 
     #remove pushes
-    if xp.setup == "Pushes":
+    if xp.setup == "Psh":
         print "+ experiment ", xp.algo, " ", xp.setup, " removed"
         return True
 
@@ -236,7 +273,7 @@ def rm_absurd_values(xp):
     # remove trials duration over 200s
     absurd_index_list = []
     #print "before duration over 200 : ", xp.WalkedDistance_list
-    if xp.algo=="kawada" or xp.setup=="Slopes":
+    if xp.algo=="kawada" or xp.setup=="Slp":
         pass
     else :
         for duration in (xp.DurationOfTheExperiment_list):
@@ -298,7 +335,7 @@ def rm_absurd_values(xp):
             return True
 
     # remove trials where the robot has fallen
-    if xp.algo=="kawada" or xp.setup=="Pushes"or (xp.algo=="NPG" and xp.setup=="10°C"):
+    if xp.algo=="kawada" or xp.setup=="Psh"or xp.algo=="Muscode" or(xp.algo=="NPG" and xp.setup=="10°C"):
         pass
     else :
         absurd_index_list = []
@@ -341,7 +378,7 @@ def plot_graph(list_mean_xp,xp_list) :
             # for setup in setup_list:
             #     if setup_list.count(setup)>1:
             #         setup_list.remove(setup)
-            tmp_kpi_list=["Intensity", "Max tracking error","Duration of the experiment"]
+            tmp_kpi_list=[ "Max tracking error","Duration of the experiment"] #"Intensity",
             fig, ax = plt.subplots(1, len(tmp_kpi_list))
             plt.suptitle("Algorithm : " + key)
             for k,kpi in enumerate(tmp_kpi_list):
@@ -368,6 +405,9 @@ def plot_graph(list_mean_xp,xp_list) :
                     #             direction_list.append(xp.setup+"\n"+xp.direction)
                     print "setup_list", setup_list
                     print "y_list", y_list
+
+                    nb_of_xp_list = [xp[-1] for xp in list_mean_xp if
+                                     xp_list[list_mean_xp.index(xp)].algo == key]  # get number of trials for xp
 
                     y_tuple = tuple(y_list)
                     setup_tuple = tuple(setup_list)
@@ -431,6 +471,8 @@ def plot_graph(list_mean_xp,xp_list) :
                     ax[j, k].set_xticklabels(setup_tuple)
                     ax[j, k].set_yscale('log')
                     if key=="NPG" and xp_tmp.kpi_list[jk]=="Max tracking error" :
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.25))
+                    elif key=="hwalk":
                         ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.25))
                     else:
                         ax[j, k].set_ylim((ax[j, k].get_ylim()[0]*0.95, ax[j, k].get_ylim()[1] * 1.105))
