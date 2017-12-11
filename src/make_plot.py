@@ -24,12 +24,13 @@ class XP :
         self.setup = ""
         self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"PG":4,"Beam":5,"kawada":6}
         self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations\nFB':5,'Translations\nSIDE':6}
-        self.kpi_list = ["WalkedDistance","SuccessRate","MaxtrackingError",
-                         "DurationOfTheExperiment","EnergyOfMotors","EnergyOfWalking",
-                         "CostOfTransport","MechaCostOfTransport","FroudeNumber"]
+        self.kpi_list = ["Walked distance","Success rate","Max tracking error",
+                         "Duration of the experiment","Energy of motors","Energy of walking",
+                         "Cost of transport","Mecha cost of transport","Froude number"]
         self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
                                "Dimensionless","Dimensionless"]
         self.success_rate = 0.0
+        #self.direction = ""
         self.headers = []
 
     def __str__(self):
@@ -78,6 +79,8 @@ def discrimin_xp(header_file,header_line,list_lines_split):
     xp_list = []
     previous_algo = ""
     previous_setup = 0
+    # previous_direction = ""
+    # current_direction = ""
 
     for i in range(len(list_lines_split)) :
 
@@ -108,14 +111,22 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("Slopes") != -1:
             current_setup = "Slopes"
         elif header_line[i].find("translation") != -1 and header_line[i].find("FB") != -1:
-            current_setup = "Translations\nFB"
+            current_setup = "Translations_FB"
         elif header_line[i].find("translation") != -1 and header_line[i].find("SIDE") != -1:
-            current_setup = "Translations\nSIDE"
+            current_setup = "Translations_SIDE"
+            # if header_line[i].find("FB") != -1:
+            #     current_direction="FB"
+            # elif header_line[i].find("SIDE") != -1:
+            #     current_direction="SIDE"
+            # else:
+            #     current_direction=""
+        # elif header_line[i].find("translation") != -1 and header_line[i].find("SIDE") != -1:
+        #    current_setup = "Translations"
         else :
             current_setup = "nothing"
 
-        if previous_algo != current_algo or previous_setup!=current_setup :
-            print "new xp detected, algo : ", current_algo, " setup : ",current_setup
+        if previous_algo != current_algo or previous_setup!=current_setup : #or previous_direction!=current_direction:
+            print "new xp detected, algo : ", current_algo, " setup : ",current_setup#, " ", current_direction
             xp = XP()
             xp.algo = current_algo
             xp_list.append(xp)
@@ -132,9 +143,11 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         xp_list[-1].headers.append(header_line[i])
 
         xp_list[-1].setup = current_setup
+        #xp_list[-1].direction=current_direction
         print  xp_list[-1].algo," ", xp_list[-1].setup
         previous_algo = current_algo
         previous_setup = current_setup
+        #previous_direction=current_direction
         print "xp_list[",i,"] : ", len(xp_list)
         #for xp in xp_list:
         #    print "xp ::: ", xp.algo, " ", xp.setup
@@ -191,6 +204,11 @@ def mean_xp(xp_list) :
     return list_mean_xp
 
 def rm_absurd_values(xp):
+
+    #remove pushes
+    if xp.setup == "Pushes":
+        print "+ experiment ", xp.algo, " ", xp.setup, " removed"
+        return True
 
     absurd_index_list = []
     # remove trials with null walked distance
@@ -316,35 +334,54 @@ def plot_graph(list_mean_xp,xp_list) :
         if key=="kawada":
             fig_list=plt.get_fignums()
             plt.close(fig_list[-1])
-            fig, ax = plt.subplots(1, 3)
+            #close_figures() #################################   to be removed
             print "enter in plotting kawada"
-            for k in range(3):
-
+            #setup_list = [xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]
+            setup_list = [xp.setup for xp in xp_list if xp.algo == key]
+            # for setup in setup_list:
+            #     if setup_list.count(setup)>1:
+            #         setup_list.remove(setup)
+            tmp_kpi_list=["Intensity", "Max tracking error","Duration of the experiment"]
+            fig, ax = plt.subplots(1, len(tmp_kpi_list))
+            plt.suptitle("Algorithm : " + key)
+            for k,kpi in enumerate(tmp_kpi_list):
+                    print "KPI : ", kpi
                 #for setup_k in ["Translations_FB","Translations_SIDE"]:
                     print "setup kawada (direction) : "#, setup_k
-                    y_list=[xp[k] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
-                    setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key ]#\
+                    #y_list=[xp[k+1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
+                    #setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key ]#\
                                     #and xp_list[list_mean_xp.index(xp)].setup == setup_k)]  #get setup found for algo
-                    nb_of_xp_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]  # get setup found for algo
+                    #direction_list = [xp.direction for xp in xp_list if xp.algo == key]
+                    y_list=[]
+                    for idx,xp in enumerate(xp_list):
+                        if xp.algo==key:
+                            if kpi=="Intensity":
+                                print "intensity : TODO"
+                            else:
+                                y_list.append(list_mean_xp[idx][xp.kpi_list.index(kpi)])
+                    # direction_list=[]
+                    # for xp in xp_list:
+                    #     if xp.algo==key:
+                    #         if xp.direction=="":
+                    #             direction_list.append(xp.setup)
+                    #         else:
+                    #             direction_list.append(xp.setup+"\n"+xp.direction)
                     print "setup_list", setup_list
                     print "y_list", y_list
-                    print "nb_of_xp_list",nb_of_xp_list
-                    # plt.plot(y_list)
-                    # plt.show()
+
                     y_tuple = tuple(y_list)
                     setup_tuple = tuple(setup_list)
                     N = len(y_tuple)
 
                     ind = np.arange(N)  # the x locations for the groups
                     width = 0.35  # the width of the bars
-
                     # fig, ax = plt.subplots()
                     # ax[0, 0].plot(x, y)
                     rects1 = ax[k].bar(ind, y_tuple, width, color='r')
 
                     # add some text for labels, title and axes ticks
                     ax[k].set_ylabel(xp_tmp.dimension_list[k])
-                    ax[k].set_title(xp_tmp.kpi_list[k])
+                    ax[k].set_title(kpi)
                     ax[k].set_xticks(ind)
                     print "setup_tuple : ", setup_tuple
                     ax[k].set_xticklabels(setup_tuple)
@@ -368,10 +405,11 @@ def plot_graph(list_mean_xp,xp_list) :
             jk=0 #place of subplot
             for j in range(3): #1st loop place subplot
                 for k in range(3): #2nd loop subplot
+                    print key," ",xp_tmp.kpi_list[jk]
                     y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
                     setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#get setup found for algo
                     nb_of_xp_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]  # get number of trials for xp
-                    print "y_list",y_list
+                    #print "y_list",y_list
                     #plt.plot(y_list)
                     #plt.show()
                     y_tuple = tuple(y_list)
@@ -389,9 +427,12 @@ def plot_graph(list_mean_xp,xp_list) :
                     ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
                     ax[j, k].set_title(xp_tmp.kpi_list[jk])
                     ax[j, k].set_xticks(ind)
-                    print "setup_tuple : ",setup_tuple
+                    #print "setup_tuple : ",setup_tuple
                     ax[j, k].set_xticklabels(setup_tuple)
-                    ax[j, k].set_ylim((ax[j, k].get_ylim()[0],ax[j, k].get_ylim()[1]*1.1))
+                    ax[j, k].set_yscale('log')
+                    ax[j, k].set_ylim((ax[j, k].get_ylim()[0]*0.95, ax[j, k].get_ylim()[1] * 1.105))
+                    print "lim inf : ",ax[j, k].get_ylim()[0]," lim up : ",ax[j, k].get_ylim()[1]
+
                     nb_points = len(y_list)
 
                     autolabel(rects1,ax,j,k,nb_of_xp_list)
