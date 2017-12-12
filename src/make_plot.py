@@ -22,7 +22,7 @@ class XP :
         self.Froude_list = []
         self.algo = ""
         self.setup = ""
-        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"NPG":4,"Beam":5,"kawada":6,"Multiple algorithms":7}#"Stepping stones":7,
+        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"NPG":4,"Beam":5,"kawada":6,"Multiple algorithms":7}#,"Morisawa":8}#"Stepping stones":7,
                           #"Down step":8,"Muscode":9}
         self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations\nFB':5,'Translations\nSIDE':6,
                            'Gravels':7,'Slip floor \nblack carpet':8,'Slip floor \ngreen carpet':9,
@@ -106,7 +106,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("climbSlope") != -1:
             current_algo = "hwalk"
         elif header_line[i].find("ClimbingWithTools") != -1:
-            current_algo = "10cm"
+            current_algo = "Multiple algorithms"
         elif header_line[i].find("StepStairsDownSeq") != -1:
             current_algo = "Multiple algorithms"#"Down step"
         elif header_line[i].find("stepOver") != -1:
@@ -142,7 +142,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("climbSlope") != -1:
             current_setup = "Slp_"#"Slopes_"
         elif header_line[i].find("ClimbingWithTools") != -1:
-            current_setup = "tool"#"stairs_"
+            current_setup = "tool upstairs"#"stairs_"
         elif header_line[i].find("StepStairsDownSeq") != -1:
             current_setup = "down stairs"#"stairs_"
         elif header_line[i].find("stepOver") != -1:
