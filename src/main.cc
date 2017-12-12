@@ -63,11 +63,11 @@ void nice_dump(path_t outputFile, vector<Experience> & Xp)
     ++index ;
     dumpStream
         << std::left << std::setw(names[index].size())
-        << std::setfill(' ') << Xp[i].EnergyOfWalking();
+        << std::setfill(' ') << Xp[i].EnergyOfMotor();
     ++index ;
     dumpStream
         << std::left << std::setw(names[index].size())
-        << std::setfill(' ') << Xp[i].EnergyOfMotor();
+        << std::setfill(' ') << Xp[i].EnergyOfWalking();
     ++index ;
     dumpStream
         << std::left << std::setw(names[index].size())
