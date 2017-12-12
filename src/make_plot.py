@@ -22,8 +22,8 @@ class XP :
         self.Froude_list = []
         self.algo = ""
         self.setup = ""
-        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"NPG":4,"Beam":5,"kawada":6,"Stepping stones":7,
-                          "Down step":8,"Muscode":9}
+        self.algo_dico = {"10cm":1,"15cm":2,"hwalk":3,"NPG":4,"Beam":5,"kawada":6,"Multiple algorithms":7}#"Stepping stones":7,
+                          #"Down step":8,"Muscode":9}
         self.setup_dico = {'degrees':1,'Bearing':2,'Pushes':3,'Slopes':4,'Translations\nFB':5,'Translations\nSIDE':6,
                            'Gravels':7,'Slip floor \nblack carpet':8,'Slip floor \ngreen carpet':9,
                            'Slip floor \nnormal ground':10,"bricks":11,'Slopes_':12,"stairs_":13,"obstacle 20cm":14}
@@ -99,8 +99,6 @@ def discrimin_xp(header_file,header_line,list_lines_split):
             current_algo = "Beam"
         elif header_line[i].find("kawada") != -1:
             current_algo = "kawada"
-        elif header_line[i].find("SteppingStones") != -1:
-            current_algo = "Stepping stones"
         elif header_line[i].find("gravles") != -1:
             current_algo = "hwalk"
         elif header_line[i].find("slipFloor") != -1:
@@ -110,10 +108,11 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("ClimbingWithTools") != -1:
             current_algo = "10cm"
         elif header_line[i].find("StepStairsDownSeq") != -1:
-            current_algo = "Down step"
+            current_algo = "Multiple algorithms"#"Down step"
         elif header_line[i].find("stepOver") != -1:
-            current_algo = "Muscode"
-
+            current_algo = "Multiple algorithms"#"Muscode"
+        elif header_line[i].find("SteppingStones") != -1:
+            current_algo = "Multiple algorithms"#"Stepping stones"
         else :
             print "no algo pattern found in this line, \n",header_line[i]
             sys.exit(1)
@@ -140,25 +139,16 @@ def discrimin_xp(header_file,header_line,list_lines_split):
             current_setup = "s_flG"#"Slip floor \ngreen carpet"
         elif header_line[i].find("slipFloor_normal_floor") != -1:
             current_setup = "s_flN"#"Slip floor \nnormal ground"
-        elif header_line[i].find("SteppingStones") != -1:
-            current_setup = "Brk"#"bricks"
         elif header_line[i].find("climbSlope") != -1:
             current_setup = "Slp_"#"Slopes_"
         elif header_line[i].find("ClimbingWithTools") != -1:
             current_setup = "tool"#"stairs_"
         elif header_line[i].find("StepStairsDownSeq") != -1:
-            current_setup = "Str_"#"stairs_"
+            current_setup = "down stairs"#"stairs_"
         elif header_line[i].find("stepOver") != -1:
-            current_setup = "obstacle 20cm"
-
-            # if header_line[i].find("FB") != -1:
-            #     current_direction="FB"
-            # elif header_line[i].find("SIDE") != -1:
-            #     current_direction="SIDE"
-            # else:
-            #     current_direction=""
-        # elif header_line[i].find("translation") != -1 and header_line[i].find("SIDE") != -1:
-        #    current_setup = "Translations"
+            current_setup = "muscode"#"obstacle 20cm"
+        elif header_line[i].find("SteppingStones") != -1:
+            current_setup = "stepping stones"  # "bricks"
         else :
             current_setup = "nothing"
 
@@ -178,6 +168,9 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         xp_list[-1].MechaCostOfTransport_list.append(list_lines_split[i][7])
         xp_list[-1].Froude_list.append(list_lines_split[i][8])
         xp_list[-1].headers.append(header_line[i])
+
+        if xp_list[-1].setup=="muscode":
+            xp_list[-1].Fall_list[-1]=False
 
         xp_list[-1].setup = current_setup
         #xp_list[-1].direction=current_direction
@@ -200,6 +193,8 @@ def mean_xp(xp_list) :
     for xp in xp_list :
         print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         print xp.algo," ", xp.setup
+        if xp.setup=="muscode":
+            print xp.Fall_list
         print " LEN : ",len(xp.WalkedDistance_list),len(xp.Fall_list),len(xp.MaxtrackingError_list),len(xp.DurationOfTheExperiment_list),len(xp.EnergyOfWalking_list),len(xp.EnergyOfMotors_list),len(xp.CostOfTransport_list),len(xp.MechaCostOfTransport_list),len(xp.Froude_list)
         print "before rm_absurd_values"
         skip_this_xp = rm_absurd_values(xp)
@@ -243,9 +238,9 @@ def mean_xp(xp_list) :
 def rm_absurd_values(xp):
 
     #remove pushes
-    if xp.setup == "Psh":
+    '''if xp.setup == "Psh":
         print "+ experiment ", xp.algo, " ", xp.setup, " removed"
-        return True
+        return True'''
 
     absurd_index_list = []
     # remove trials with null walked distance
@@ -272,7 +267,6 @@ def rm_absurd_values(xp):
 
     # remove trials duration over 200s
     absurd_index_list = []
-    #print "before duration over 200 : ", xp.WalkedDistance_list
     if xp.algo=="kawada" or xp.setup=="Slp":
         pass
     else :
@@ -335,7 +329,7 @@ def rm_absurd_values(xp):
             return True
 
     # remove trials where the robot has fallen
-    if xp.algo=="kawada" or xp.setup=="Psh"or xp.algo=="Muscode" or(xp.algo=="NPG" and xp.setup=="10°C"):
+    if xp.algo=="kawada" or xp.setup=="Psh"or xp.setup=="muscode" or(xp.algo=="NPG" and xp.setup=="10°C"):
         pass
     else :
         absurd_index_list = []
@@ -470,13 +464,15 @@ def plot_graph(list_mean_xp,xp_list) :
                     #print "setup_tuple : ",setup_tuple
                     ax[j, k].set_xticklabels(setup_tuple)
                     ax[j, k].set_yscale('log')
-                    if key=="NPG" and xp_tmp.kpi_list[jk]=="Max tracking error" :
+                    if (key=="NPG" and xp_tmp.kpi_list[jk]=="Max tracking error") or key=="hwalk":
                         ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.25))
-                    elif key=="hwalk":
-                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.25))
+                    elif  key=="Multiple algorithms":
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.35))
+                    elif  key=="Beam":
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.1005))
                     else:
                         ax[j, k].set_ylim((ax[j, k].get_ylim()[0]*0.95, ax[j, k].get_ylim()[1] * 1.105))
-                    print "lim inf : ",ax[j, k].get_ylim()[0]," lim up : ",ax[j, k].get_ylim()[1]
+                    #print "lim inf : ",ax[j, k].get_ylim()[0]," lim up : ",ax[j, k].get_ylim()[1]
 
                     nb_points = len(y_list)
 
