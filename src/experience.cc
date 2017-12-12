@@ -62,6 +62,7 @@ Experience::Experience(Motors * hrp2motors,
   ignore_ref_ = false ;
   has_fallen_ = false ;
   maxTrackingError_ = 0.0 ;
+  baseTrajLenght_ = 0.0 ;
 
   setExperienceName(rootFolder);
 #ifdef PINOCCHIO
@@ -788,8 +789,11 @@ int Experience::odometrie()
       //cout << "ARGH NO SUPPORT" << endl ;
       world_V_base_[n].setZero() ;
     }
-    world_M_base_[n] = se3::exp6(world_V_base_[n]*0.005).act(world_M_base_[n-1]) ;
+    se3::SE3 delta_motion = se3::exp6(world_V_base_[n]*0.005);
+    world_M_base_[n] = delta_motion.act(world_M_base_[n-1]) ; 
+    baseTrajLenght_ += delta_motion.translation().norm();
   }
+
   string dump ;
   dump = experienceName_+"_world_V_base.dat" ;
   dump_.dump( dump , world_V_base_ ) ;

@@ -41,7 +41,9 @@ public: // methods
   std::string hasFallen()
   {return has_fallen_==true ? "true":"false" ;}
   double maxTrackingError()
-  {return maxTrackingError_;}
+  {return maxTrackingError_;} 
+  double baseTrajLenght()
+  {return baseTrajLenght_;}
 
 private : // methods
   int setExperienceName(path_t rootFolder);
@@ -107,6 +109,8 @@ private : // attributes
   double WeightOfRobot_ ; //in Newton
   double LegLenght_ ;
   double Gravity_ ;
+
+  double baseTrajLenght_ ;
 
 #ifdef PINOCCHIO
   // for odometrie
