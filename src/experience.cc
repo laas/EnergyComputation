@@ -353,22 +353,22 @@ int Experience::readData()
 
   // dump all the files
   string dump ;
-  /*dump = experienceName_+"_q.dat" ;
-  dump_.dump( dump , q_ ) ;
+  //dump = experienceName_+"_q.dat" ;
+  //dump_.dump( dump , q_ ) ;
 
   dump = experienceName_ + "_dq.dat" ;
   dump_.dump( dump , dq_ ) ;
 
-  dump = experienceName_ + "_ddq.dat" ;
-  dump_.dump( dump , ddq_ ) ;
+  //dump = experienceName_ + "_ddq.dat" ;
+  //dump_.dump( dump , ddq_ ) ;
 
-  dump = experienceName_ + "_torques_raw.dat" ;
-  dump_.dump( dump , torques_tmp ) ;
+  //dump = experienceName_ + "_torques_raw.dat" ;
+  //dump_.dump( dump , torques_tmp ) ;
 
   dump = experienceName_ + "_torques.dat" ;
   dump_.dump( dump , torques_ ) ;
 
-  dump = experienceName_ + "_q_raw.dat" ;
+  /*dump = experienceName_ + "_q_raw.dat" ;
   dump_.dump( dump , q_tmp ) ;
 
   dump = experienceName_ + "_q_ref.dat" ;
@@ -477,13 +477,13 @@ int Experience::defineBeginEndIndexes()
 #endif
   }
   // dump all the files
- /* string dump ;
-  dump = experienceName_+"_q_cut.dat" ;
+  string dump ;
+  //dump = experienceName_+"_q_cut.dat" ;
   dump_.dump( dump , q_ ) ;
   dump = experienceName_ + "_dq_cut.dat" ;
   dump_.dump( dump , dq_ ) ;
   dump = experienceName_ + "_torques_cut.dat" ;
-  dump_.dump( dump , torques_ ) ;
+  dump_.dump( dump , torques_ ) ;/*
 #ifdef PINOCCHIO
   dump = experienceName_+"_left_foot_wrench_cut.dat" ;
   dump_.dump( dump , left_foot_wrench_   ) ;
@@ -513,6 +513,16 @@ int Experience::computeTheEnergy()
   integration(powerOutputMotors_,energyOfMotors);
   vector< vector<double> > energyOfWalk ( N , vector<double> (ddl_,0) );
   integration(powerOfWalk_,energyOfWalk);
+  
+  string dump ;
+  dump = experienceName_ + "powerOfWalk_.dat" ;
+  dump_.dump( dump , powerOfWalk_ ) ;
+  dump = experienceName_ + "powerOutputMotors_.dat" ;
+  dump_.dump( dump , powerOutputMotors_ ) ;
+  dump = experienceName_ + "energyOfWalk.dat" ;
+  dump_.dump( dump , energyOfWalk ) ;
+  dump = experienceName_ + "energyOfMotors.dat" ;
+  dump_.dump( dump , energyOfMotors ) ;
 
   if (walkedDistanced_ < 0.005)
   {
