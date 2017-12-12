@@ -20,6 +20,7 @@ void nice_dump(path_t outputFile, vector<Experience> & Xp)
   names.push_back("CostOfTransport "           );
   names.push_back("MechaCostOfTransport "      );
   names.push_back("FroudeNumber "              );
+  names.push_back("baseTrajLenght "            );
   int maxwidth=names[0].size() ;
   for (unsigned i=0 ; i<Xp.size() ; ++i)
   {maxwidth = max<int>(maxwidth,Xp[i].name().size());}
@@ -80,6 +81,10 @@ void nice_dump(path_t outputFile, vector<Experience> & Xp)
     dumpStream
         << std::left << std::setw(names[index].size())
         << std::setfill(' ') << Xp[i].FroudeNumber();
+    ++index ;
+    dumpStream
+        << std::left << std::setw(names[index].size())
+        << std::setfill(' ') << Xp[i].baseTrajLenght();
     ++index ;
     dumpStream
         << endl ;
