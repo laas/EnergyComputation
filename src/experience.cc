@@ -552,8 +552,8 @@ int Experience::computeTheEnergy()
 
     double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
 
-    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*MeanVelocity) ;
-    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*MeanVelocity) ;
+    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*walkedDistanced_) ;
+    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*walkedDistanced_) ;
 
     FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
   }
