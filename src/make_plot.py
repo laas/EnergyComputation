@@ -34,7 +34,7 @@ class XP :
                                "Dimensionless","Dimensionless"]
         self.success_rate = 0.0
         self.headers = []
-        self.base_traj_lenght=0.0
+        self.base_traj_lenght=[]
 
     def __str__(self):
         attrs = vars(self)
@@ -167,7 +167,6 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         xp_list[-1].CostOfTransport_list.append(list_lines_split[i][6])
         xp_list[-1].MechaCostOfTransport_list.append(list_lines_split[i][7])
         xp_list[-1].Froude_list.append(list_lines_split[i][8])
-        xp_list[-1].base_traj_lenght.append(list_lines_split[i][9])
         xp_list[-1].headers.append(header_line[i])
 
         if xp_list[-1].setup=="muscode" or (xp_list[-1].algo=="NPG" and xp_list[-1].setup=="10°C"):
