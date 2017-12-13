@@ -28,7 +28,7 @@ class XP :
                            'Gravels':7,'Slip floor \nblack carpet':8,'Slip floor \ngreen carpet':9,
                            'Slip floor \nnormal ground':10,"bricks":11,'Slopes_':12,"stairs_":13,"obstacle 20cm":14}
         self.kpi_list = ["Walked distance","Success rate","Max tracking error",
-                         "Duration of the experiment","Energy of motors","Energy of walking",
+                         "Duration of the experiment","Mechanical energy of joints","Energy of actuators",
                          "Cost of transport","Mecha cost of transport","Froude number"]
         self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
                                "Dimensionless","Dimensionless"]
