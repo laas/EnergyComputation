@@ -126,7 +126,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("Pushes") != -1:
             current_setup = "Psh"#"Pushes"
         elif header_line[i].find("Slopes") != -1:
-            current_setup = "Slp"#"Slopes"
+            current_setup = "Slne"#"Slopes"
         elif header_line[i].find("translation") != -1 and header_line[i].find("FB") != -1:
             current_setup = "TrslFB"#"Translations_FB"
         elif header_line[i].find("translation") != -1 and header_line[i].find("SIDE") != -1:
@@ -134,13 +134,13 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("gravles") != -1:
             current_setup = "Grvl"#"Gravels"
         elif header_line[i].find("slipFloor_backCarpet") != -1:
-            current_setup = "s_flB"#"Slip floor \nblack carpet"
+            current_setup = "FrcB"#"Slip floor \nblack carpet"
         elif header_line[i].find("slipFloor_greenCarpe") != -1:
-            current_setup = "s_flG"#"Slip floor \ngreen carpet"
+            current_setup = "FrcG"#"Slip floor \ngreen carpet"
         elif header_line[i].find("slipFloor_normal_floor") != -1:
-            current_setup = "s_flN"#"Slip floor \nnormal ground"
+            current_setup = "FrcN"#"Slip floor \nnormal ground"
         elif header_line[i].find("climbSlope") != -1:
-            current_setup = "Slp_"#"Slopes_"
+            current_setup = "Skor"#"Slopes_"
         elif header_line[i].find("ClimbingWithTools") != -1:
             current_setup = "tool upstairs"#"stairs_"
         elif header_line[i].find("StepStairsDownSeq") != -1:
@@ -169,7 +169,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         xp_list[-1].Froude_list.append(list_lines_split[i][8])
         xp_list[-1].headers.append(header_line[i])
 
-        if xp_list[-1].setup=="muscode":
+        if xp_list[-1].setup=="muscode" or (xp_list[-1].algo=="NPG" and xp_list[-1].setup=="10°C"):
             xp_list[-1].Fall_list[-1]=False
 
         xp_list[-1].setup = current_setup
@@ -267,7 +267,7 @@ def rm_absurd_values(xp):
 
     # remove trials duration over 200s
     absurd_index_list = []
-    if xp.algo=="kawada" or xp.setup=="Slp":
+    if xp.algo=="kawada" or xp.setup=="Slne":
         pass
     else :
         for duration in (xp.DurationOfTheExperiment_list):
