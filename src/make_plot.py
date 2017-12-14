@@ -65,16 +65,11 @@ def read_file(file_name):
 
     for line in results_file :
         list_lines_str.append(line)
-        #print "list_lines_str",list_lines_str
         list_lines_str_split.append(list_lines_str[-1].split())
-        #print "list_lines_str_split",list_lines_str_split
         header_line.append(list_lines_str_split[-1].pop(0))
-        #print "header_line",header_line, " list_lines_str_split ", list_lines_str_split
         list_lines_split.append([float(word) for word in list_lines_str_split[-1] if isfloat(word)])
-        #for i in len(list_lines_str_split):
         list_lines_split[-1].insert(1,convert_fall(list_lines_str_split[-1][1]))
-        #print "list_lines_str_split", list_lines_str_split
-        #print "list_lines_split",list_lines_split
+
     return header_file,header_line,list_lines_split
 
 def discrimin_xp(header_file,header_line,list_lines_split):
@@ -82,8 +77,6 @@ def discrimin_xp(header_file,header_line,list_lines_split):
     xp_list = []
     previous_algo = ""
     previous_setup = 0
-    # previous_direction = ""
-    # current_direction = ""
 
     for i in range(len(list_lines_split)) :
 
@@ -179,10 +172,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         previous_setup = current_setup
         #previous_direction=current_direction
         print "xp_list[",i,"] : ", len(xp_list)
-        #for xp in xp_list:
-        #    print "xp ::: ", xp.algo, " ", xp.setup
-    #for xp in xp_list:
-    #    print "xp ::: ", xp.algo," ", xp.setup
+
     return xp_list
 
 def mean_xp(xp_list) :
@@ -223,14 +213,13 @@ def mean_xp(xp_list) :
             print "!!!!! no usable value in this xp : ", xp.algo, " ", xp.setup
             xp_index_to_rm.append(xp_list.index(xp))
         #print "nb_of_xp : ", nb_of_xp
+
     #remove xp with no valid trials:
     for index in reversed(xp_index_to_rm) :
         print "removed xp : ",xp_list[index].algo," ",xp_list[index].setup
         xp_list.pop(index)
     for idx,xp in enumerate(xp_list):
         print xp.algo," ",xp.setup
-        #if xp.algo=="15cm" and xp.setup=="10°C":
-        #    print "success rate for 15cm 10deg : ", list_mean_xp[idx]
 
     #print "list_mean_xp : ",list_mean_xp
     return list_mean_xp
@@ -370,22 +359,13 @@ def plot_graph(list_mean_xp,xp_list) :
             plt.close(fig_list[-1])
             #close_figures() #################################   to be removed
             print "enter in plotting kawada"
-            #setup_list = [xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]
             setup_list = [xp.setup for xp in xp_list if xp.algo == key]
-            # for setup in setup_list:
-            #     if setup_list.count(setup)>1:
-            #         setup_list.remove(setup)
             tmp_kpi_list=[ "Max tracking error","Duration of the experiment"] #"Intensity",
             fig, ax = plt.subplots(1, len(tmp_kpi_list))
             plt.suptitle("Algorithm : " + key)
             for k,kpi in enumerate(tmp_kpi_list):
                     print "KPI : ", kpi
-                #for setup_k in ["Translations_FB","Translations_SIDE"]:
                     print "setup kawada (direction) : "#, setup_k
-                    #y_list=[xp[k+1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
-                    #setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key ]#\
-                                    #and xp_list[list_mean_xp.index(xp)].setup == setup_k)]  #get setup found for algo
-                    #direction_list = [xp.direction for xp in xp_list if xp.algo == key]
                     y_list=[]
                     for idx,xp in enumerate(xp_list):
                         if xp.algo==key:
@@ -393,13 +373,6 @@ def plot_graph(list_mean_xp,xp_list) :
                                 print "intensity : TODO"
                             else:
                                 y_list.append(list_mean_xp[idx][xp.kpi_list.index(kpi)])
-                    # direction_list=[]
-                    # for xp in xp_list:
-                    #     if xp.algo==key:
-                    #         if xp.direction=="":
-                    #             direction_list.append(xp.setup)
-                    #         else:
-                    #             direction_list.append(xp.setup+"\n"+xp.direction)
                     print "setup_list", setup_list
                     print "y_list", y_list
 
@@ -412,8 +385,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
                     ind = np.arange(N)  # the x locations for the groups
                     width = 0.35  # the width of the bars
-                    # fig, ax = plt.subplots()
-                    # ax[0, 0].plot(x, y)
+
                     rects1 = ax[k].bar(ind, y_tuple, width, color='r')
 
                     # add some text for labels, title and axes ticks
@@ -446,9 +418,7 @@ def plot_graph(list_mean_xp,xp_list) :
                     y_list=[xp[jk] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key] # get mean values for algo
                     setup_list=[xp[-2] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo==key]#get setup found for algo
                     nb_of_xp_list=[xp[-1] for xp in list_mean_xp if xp_list[list_mean_xp.index(xp)].algo == key]  # get number of trials for xp
-                    #print "y_list",y_list
-                    #plt.plot(y_list)
-                    #plt.show()
+
                     y_tuple = tuple(y_list)
                     setup_tuple = tuple(setup_list)
                     N = len(y_tuple)
@@ -456,8 +426,6 @@ def plot_graph(list_mean_xp,xp_list) :
                     ind = np.arange(N)  # the x locations for the groups
                     width = 0.35  # the width of the bars
 
-                    #fig, ax = plt.subplots()
-                    #ax[0, 0].plot(x, y)
                     rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
 
                     # add some text for labels, title and axes ticks
@@ -528,7 +496,7 @@ def close_figures():
 if __name__ == '__main__':
     close_figures()
     if len(sys.argv)>1:
-        file_name = sys.argv[1]#"/home/anthropobot/devel/EnergyComputation/_build/bin/DEBUG/results_2017_Oct_19.txt"
+        file_name = sys.argv[1]
     else :
         exit(1)
     header_file, header_line, list_lines_split = read_file(file_name)
