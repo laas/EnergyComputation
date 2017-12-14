@@ -360,7 +360,10 @@ def rm_absurd_values(xp):
 def plot_graph(list_mean_xp,xp_list) :
     xp_tmp=XP()
     for key in xp_tmp.algo_dico.keys() : #loop on algo
+      #if key=="hwalk":
         fig, ax = plt.subplots(3, 3)
+        plt.subplots_adjust(left=0.05, bottom=0.05, right=0.98, top=0.91,
+                        wspace=0.26, hspace=0.26)
         plt.suptitle("Algorithm : "+key)
         if key=="kawada":
             fig_list=plt.get_fignums()
