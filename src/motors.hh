@@ -22,9 +22,9 @@ public:
 
 private:
   std::vector<std::string> titleRobotConfig_ ;
+public:
   std::vector<double> torque_constant_ ;
   std::vector<double> resistor_ ;
-public:
   std::vector<double> R_K2 ; // R/Kc^2 * tau^2
   std::vector<std::string> joint_name_;
   std::vector<double> gear_ratio_;
