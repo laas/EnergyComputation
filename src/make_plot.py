@@ -476,7 +476,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
                     nb_points = len(y_list)
 
-                    autolabel(rects1,ax,j,k,nb_of_xp_list,xp_tmp.kpi_list[jk])
+                    autolabel(rects1,ax,j,k,nb_of_xp_list,xp_tmp.kpi_list[jk],key)
 
                     plt.show(block=False)
                     jk+=1
@@ -484,7 +484,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
     return
 
-def autolabel(rects,ax,j,k,nb_of_xp_list,kpi):
+def autolabel(rects,ax,j,k,nb_of_xp_list,kpi,key):
     """
     Attach a text label above each bar displaying its height
     """
@@ -495,9 +495,13 @@ def autolabel(rects,ax,j,k,nb_of_xp_list,kpi):
                     '%s \nnb:%s' % (str('{0:.2f}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
                     ha='center', va='bottom')
         else:
-            if kpi=="Froude number":
+            if key =="hwalk" and kpi=="Froude number":
                 ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
                           '%s \nnb:%s' % (str('{0:.2f}'.format(height*100)), str(nb_of_xp_list[rects.index(rect)])),
+                          ha='center', va='bottom')
+            elif key =="hwalk" and kpi == "Max tracking error" :
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                          '%s \nnb:%s' % (str('{0:.2f}'.format(height * 1000)), str(nb_of_xp_list[rects.index(rect)])),
                           ha='center', va='bottom')
             else:
                 ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
