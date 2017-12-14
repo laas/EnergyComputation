@@ -476,7 +476,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
                     nb_points = len(y_list)
 
-                    autolabel(rects1,ax,j,k,nb_of_xp_list)
+                    autolabel(rects1,ax,j,k,nb_of_xp_list,xp_tmp.kpi_list[jk])
 
                     plt.show(block=False)
                     jk+=1
@@ -484,7 +484,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
     return
 
-def autolabel(rects,ax,j,k,nb_of_xp_list):
+def autolabel(rects,ax,j,k,nb_of_xp_list,kpi):
     """
     Attach a text label above each bar displaying its height
     """
@@ -495,9 +495,14 @@ def autolabel(rects,ax,j,k,nb_of_xp_list):
                     '%s \nnb:%s' % (str('{0:.2f}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
                     ha='center', va='bottom')
         else:
-            ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
-                      '%s \nnb:%s' % (str('{0:.2E}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
-                      ha='center', va='bottom')
+            if kpi=="Froude number":
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                          '%s \nnb:%s' % (str('{0:.2f}'.format(height*100)), str(nb_of_xp_list[rects.index(rect)])),
+                          ha='center', va='bottom')
+            else:
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                          '%s \nnb:%s' % (str('{0:.2E}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
+                          ha='center', va='bottom')
 
 def close_figures():
     for i in plt.get_fignums():
