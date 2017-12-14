@@ -28,8 +28,8 @@ class XP :
                            'Gravels':7,'Slip floor \nblack carpet':8,'Slip floor \ngreen carpet':9,
                            'Slip floor \nnormal ground':10,"bricks":11,'Slopes_':12,"stairs_":13,"obstacle 20cm":14}
         self.kpi_list = ["Walked distance","Success rate","Max tracking error",
-                         "Duration of the experiment","Mechanical energy of joints","Energy of actuators",
-                         "Cost of transport","Mecha cost of transport","Froude number"]
+                         "Duration of the experiment","Mechanical energy","Total energy",
+                         "Total cost of transport","Mechanical cost of transport","Froude number"]
         self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
                                "Dimensionless","Dimensionless"]
         self.success_rate = 0.0
@@ -491,9 +491,18 @@ def autolabel(rects,ax,j,k,nb_of_xp_list,kpi,key):
     for rect in rects:
         height = rect.get_height()
         if height> 0.1:
-            ax[j, k].text(rect.get_x() + rect.get_width()/2., height,
-                    '%s \nnb:%s' % (str('{0:.2f}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
-                    ha='center', va='bottom')
+            if key =="hwalk" and kpi =="Mechanical energy":
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                              '%s \nnb:%s' % (str(int(height)), str(nb_of_xp_list[rects.index(rect)])),
+                              ha='center', va='bottom')
+            elif key =="hwalk" and kpi =="Total energy":
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                              '%s \nnb:%s' % (str(int(height)), str(nb_of_xp_list[rects.index(rect)])),
+                              ha='center', va='bottom')
+            else:
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                              '%s \nnb:%s' % (str('{0:.2f}'.format(height)), str(nb_of_xp_list[rects.index(rect)])),
+                              ha='center', va='bottom')
         else:
             if key =="hwalk" and kpi=="Froude number":
                 ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
