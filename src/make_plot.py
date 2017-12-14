@@ -28,7 +28,7 @@ class XP :
                            'Gravels':7,'Slip floor \nblack carpet':8,'Slip floor \ngreen carpet':9,
                            'Slip floor \nnormal ground':10,"bricks":11,'Slopes_':12,"stairs_":13,"obstacle 20cm":14}
         self.kpi_list = ["Walked distance","Success rate","Max tracking error",
-                         "Duration of the experiment","Energy of motors","Energy of walking",
+                         "Duration of the experiment","Mechanical energy of joints","Energy of actuators",
                          "Cost of transport","Mecha cost of transport","Froude number"]
         self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
                                "Dimensionless","Dimensionless"]
@@ -126,7 +126,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("Pushes") != -1:
             current_setup = "Psh"#"Pushes"
         elif header_line[i].find("Slopes") != -1:
-            current_setup = "Slp"#"Slopes"
+            current_setup = "Slne"#"Slopes"
         elif header_line[i].find("translation") != -1 and header_line[i].find("FB") != -1:
             current_setup = "TrslFB"#"Translations_FB"
         elif header_line[i].find("translation") != -1 and header_line[i].find("SIDE") != -1:
@@ -134,13 +134,13 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("gravles") != -1:
             current_setup = "Grvl"#"Gravels"
         elif header_line[i].find("slipFloor_backCarpet") != -1:
-            current_setup = "s_flB"#"Slip floor \nblack carpet"
+            current_setup = "FrcB"#"Slip floor \nblack carpet"
         elif header_line[i].find("slipFloor_greenCarpe") != -1:
-            current_setup = "s_flG"#"Slip floor \ngreen carpet"
+            current_setup = "FrcG"#"Slip floor \ngreen carpet"
         elif header_line[i].find("slipFloor_normal_floor") != -1:
-            current_setup = "s_flN"#"Slip floor \nnormal ground"
+            current_setup = "FrcN"#"Slip floor \nnormal ground"
         elif header_line[i].find("climbSlope") != -1:
-            current_setup = "Slp_"#"Slopes_"
+            current_setup = "Skor"#"Slopes_"
         elif header_line[i].find("ClimbingWithTools") != -1:
             current_setup = "tool upstairs"#"stairs_"
         elif header_line[i].find("StepStairsDownSeq") != -1:
@@ -169,7 +169,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         xp_list[-1].Froude_list.append(list_lines_split[i][8])
         xp_list[-1].headers.append(header_line[i])
 
-        if xp_list[-1].setup=="muscode":
+        if xp_list[-1].setup=="muscode" or (xp_list[-1].algo=="NPG" and xp_list[-1].setup=="10°C"):
             xp_list[-1].Fall_list[-1]=False
 
         xp_list[-1].setup = current_setup
@@ -267,7 +267,7 @@ def rm_absurd_values(xp):
 
     # remove trials duration over 200s
     absurd_index_list = []
-    if xp.algo=="kawada" or xp.setup=="Slp":
+    if xp.algo=="kawada" or xp.setup=="Slne":
         pass
     else :
         for duration in (xp.DurationOfTheExperiment_list):
@@ -476,7 +476,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
                     nb_points = len(y_list)
 
-                    autolabel(rects1,ax,j,k,nb_of_xp_list)
+                    autolabel(rects1,ax,j,k,nb_of_xp_list,xp_tmp.kpi_list[jk],key)
 
                     plt.show(block=False)
                     jk+=1
@@ -484,7 +484,7 @@ def plot_graph(list_mean_xp,xp_list) :
 
     return
 
-def autolabel(rects,ax,j,k,nb_of_xp_list):
+def autolabel(rects,ax,j,k,nb_of_xp_list,kpi,key):
     """
     Attach a text label above each bar displaying its height
     """
@@ -495,9 +495,18 @@ def autolabel(rects,ax,j,k,nb_of_xp_list):
                     '%s \nnb:%s' % (str('{0:.2f}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
                     ha='center', va='bottom')
         else:
-            ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
-                      '%s \nnb:%s' % (str('{0:.2E}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
-                      ha='center', va='bottom')
+            if key =="hwalk" and kpi=="Froude number":
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                          '%s \nnb:%s' % (str('{0:.2f}'.format(height*100)), str(nb_of_xp_list[rects.index(rect)])),
+                          ha='center', va='bottom')
+            elif key =="hwalk" and kpi == "Max tracking error" :
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                          '%s \nnb:%s' % (str('{0:.2f}'.format(height * 1000)), str(nb_of_xp_list[rects.index(rect)])),
+                          ha='center', va='bottom')
+            else:
+                ax[j, k].text(rect.get_x() + rect.get_width() / 2., height,
+                          '%s \nnb:%s' % (str('{0:.2E}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
+                          ha='center', va='bottom')
 
 def close_figures():
     for i in plt.get_fignums():
