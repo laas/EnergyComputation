@@ -40,6 +40,21 @@ class XP :
         attrs = vars(self)
         return ', '.join("%s: %s" % item for item in attrs.items())
 
+class XP_KAWADA :
+    def __init__(self):
+        self.XP()
+        self.mm=0
+        self.hz=0
+
+    def get_mm(self):
+        pass
+    def get_hz(self):
+        pass
+
+    def __str__(self):
+        attrs = vars(self)
+        return ', '.join("%s: %s" % item for item in attrs.items())
+
 def isfloat(value):
   try:
     float(value)
@@ -488,6 +503,15 @@ def autolabel(rects,ax,j,k,nb_of_xp_list,kpi,key):
                           '%s \nnb:%s' % (str('{0:.2E}'.format(height)),str(nb_of_xp_list[rects.index(rect)])),
                           ha='center', va='bottom')
 
+def handle_kawada(xp_list):
+    print "enter in hansle kawada function"
+    kawada_xp_list=[xp for xp in xp_list if xp.algo=="kawada"]
+    print "len of kawada list : ", len (kawada_xp_list)
+    for xp in kawada_xp_list :
+        print xp.algo," ",xp.setup
+    print "end of kawada function"
+
+
 def close_figures():
     for i in plt.get_fignums():
         plt.close(i)
@@ -503,7 +527,6 @@ if __name__ == '__main__':
     xp_list = discrimin_xp(header_file, header_line, list_lines_split)
     list_mean_xp = mean_xp(xp_list)
     plot_graph(list_mean_xp, xp_list)
-
-
+    #handle_kawada(xp_list)
 
 
