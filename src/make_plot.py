@@ -104,7 +104,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
         elif header_line[i].find("slipFloor") != -1:
             current_algo = "hwalk"
         elif header_line[i].find("climbSlope") != -1:
-            current_algo = "hwalk"
+            current_algo = "Multiple algorithms"
         elif header_line[i].find("ClimbingWithTools") != -1:
             current_algo = "Multiple algorithms"
         elif header_line[i].find("StepStairsDownSeq") != -1:
