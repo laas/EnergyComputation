@@ -435,6 +435,7 @@ def plot_graph(list_mean_xp,xp_list) :
             setup_list=[]
             setup_kawada_=["1Hz", "2Hz", "10mm"]
             kpi_kawada_=["Max tracking error","Mechanical energy", "Total energy"]
+            unit_list = ["rad", "J.s-1", "J.s-1"]
             #fig_list = plt.get_fignums()
             #plt.close(fig_list[-1])
             fig, ax = plt.subplots(len(setup_kawada_), len(kpi_kawada_))
@@ -455,9 +456,9 @@ def plot_graph(list_mean_xp,xp_list) :
                             if kpi_kawada=="Max tracking error":
                                 y_list.append(xp.MaxtrackingError_list[-1])
                             if kpi_kawada == "Total energy":
-                                y_list.append(xp.CostOfTransport_list[-1])
+                                y_list.append(xp.EnergyOfWalking_list[-1])
                             if kpi_kawada == "Mechanical energy":
-                                y_list.append(xp.MechaCostOfTransport_list[-1])
+                                y_list.append(xp.EnergyOfMotors_list[-1])
                             if xp == halfsitting:
                                 setup_list.append(xp.setup)
                             else:
@@ -475,7 +476,7 @@ def plot_graph(list_mean_xp,xp_list) :
                     rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
 
                     # add some text for labels, title and axes ticks
-                    ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
+                    ax[j, k].set_ylabel(unit_list[k])
                     ax[j, k].set_title(kpi_kawada)
                     ax[j, k].set_xticks(ind)
                     # print "setup_tuple : ",setup_tuple
@@ -509,6 +510,7 @@ def plot_graph(list_mean_xp,xp_list) :
             setup_list = []
             setup_kawada_ = [ "2Hz", "10mm"]
             kpi_kawada_ = ["Max tracking error","Mechanical energy", "Total energy"]
+            unit_list = ["rad","J.s-1","J.s-1"]
             fig_list = plt.get_fignums()
             plt.close(fig_list[-1])
             fig, ax = plt.subplots(len(setup_kawada_), len(kpi_kawada_))
@@ -527,9 +529,9 @@ def plot_graph(list_mean_xp,xp_list) :
                             if kpi_kawada == "Max tracking error":
                                 y_list.append(xp.MaxtrackingError_list[-1])
                             if kpi_kawada == "Total energy":
-                                y_list.append(xp.CostOfTransport_list[-1])
+                                y_list.append(xp.EnergyOfWalking_list[-1])
                             if kpi_kawada == "Mechanical energy":
-                                y_list.append(xp.MechaCostOfTransport_list[-1])
+                                y_list.append(xp.EnergyOfMotors_list[-1])
                             if xp == halfsitting:
                                 setup_list.append(xp.setup)
                             else:
@@ -547,7 +549,7 @@ def plot_graph(list_mean_xp,xp_list) :
                     rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
 
                     # add some text for labels, title and axes ticks
-                    ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
+                    ax[j, k].set_ylabel(unit_list[k])
                     ax[j, k].set_title(kpi_kawada)
                     ax[j, k].set_xticks(ind)
                     # print "setup_tuple : ",setup_tuple
