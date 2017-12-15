@@ -412,28 +412,29 @@ def plot_graph(list_mean_xp,xp_list) :
             kawada_list.append(new_xp_kawada)
 
     xp_tmp=XP()
+    fig, ax = plt.subplots(3, 3)
     for key in xp_tmp.algo_dico.keys() : #loop on algo
-      if "kawada" in key:
-        fig, ax = plt.subplots(3, 3)
+      if "kawada FB" in key:
+
         plt.subplots_adjust(left=0.05, bottom=0.05, right=0.98, top=0.91,
                         wspace=0.26, hspace=0.26)
 
-        if key=="kawada FB" or key=="kawada SD":
-            plt.suptitle("Algorithm : " + key)
+        #if key=="kawada FB" or key=="kawada SD":
+        if True:
             print "*********************",key
             setup_list=[]
             setup_kawada_=["1Hz", "2Hz", "10mm"]
             kpi_kawada_=["Max tracking error", "Duration of the experiment", "Base trajectory lenght"]
-            fig_list = plt.get_fignums()
-            plt.close(fig_list[-1])
+            #fig_list = plt.get_fignums()
+            #plt.close(fig_list[-1])
             fig, ax = plt.subplots(len(setup_kawada_), len(kpi_kawada_))
             plt.suptitle("Algorithm : " + key)
+            plt.subplots_adjust(left=0.05, bottom=0.05, right=0.98, top=0.91,
+                                wspace=0.26, hspace=0.26)
             jk = 0  # place of subplot
             for j,setup_kawada in enumerate(setup_kawada_):  # 1st loop place subplot
                 for k,kpi_kawada in enumerate(kpi_kawada_):  # 2nd loop subplot
                     print key, " ", kpi_kawada," ",setup_kawada
-                    """y_list = [xp[jk] for xp in list_mean_xp if
-                              xp_list[list_mean_xp.index(xp)].algo == key]  # get mean values for algo"""
                     y_listFB=[]
                     y_listSD=[]
                     setup_list=[]
@@ -451,12 +452,70 @@ def plot_graph(list_mean_xp,xp_list) :
                             print xp.setup[7:]
                             nb_of_xp_list.append(1)
 
-                    
+                    y_tuple = tuple(y_listFB)
+                    setup_tuple = tuple(setup_list)
+                    N = len(y_tuple)
 
-                    # setup_list = [xp[-2] for xp in list_mean_xp if
-                    #               xp_list[list_mean_xp.index(xp)].algo == key]  # get setup found for algo
-                    # nb_of_xp_list = [xp[-1] for xp in list_mean_xp if
-                    #                  xp_list[list_mean_xp.index(xp)].algo == key]  # get number of trials for xp
+                    ind = np.arange(N)  # the x locations for the groups
+                    width = 0.35  # the width of the bars
+
+                    rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
+
+                    # add some text for labels, title and axes ticks
+                    ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
+                    ax[j, k].set_title(kpi_kawada)
+                    ax[j, k].set_xticks(ind)
+                    # print "setup_tuple : ",setup_tuple
+                    ax[j, k].set_xticklabels(setup_tuple)
+                    ax[j, k].set_yscale('log')
+
+                    nb_points = len(y_listFB)
+                    ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.15))
+                    if setup_list[-1] == "Base trajectory lenght" or setup_list[-1] == "Duration of the experiment":
+                        print "modification of limits"
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.35))
+
+                    autolabel(rects1, ax, j, k, nb_of_xp_list, xp_tmp.kpi_list[jk], key)
+
+                    plt.show(block=False)
+                    jk += 1
+                    print "end loop one plot "
+
+      if "kawada SD" in key:
+
+        plt.subplots_adjust(left=0.05, bottom=0.05, right=0.98, top=0.91,
+                            wspace=0.26, hspace=0.26)
+
+        # if key=="kawada FB" or key=="kawada SD":
+        if True:
+            print "*********************", key
+            setup_list = []
+            setup_kawada_ = [ "2Hz", "10mm"]
+            kpi_kawada_ = ["Max tracking error", "Duration of the experiment", "Base trajectory lenght"]
+            fig_list = plt.get_fignums()
+            plt.close(fig_list[-1])
+            fig, ax = plt.subplots(len(setup_kawada_), len(kpi_kawada_))
+            plt.suptitle("Algorithm : " + key)
+            jk = 0  # place of subplot
+            for j, setup_kawada in enumerate(setup_kawada_):  # 1st loop place subplot
+                for k, kpi_kawada in enumerate(kpi_kawada_):  # 2nd loop subplot
+                    print key, " ", kpi_kawada, " ", setup_kawada
+                    y_listFB = []
+                    y_listSD = []
+                    setup_list = []
+                    nb_of_xp_list = []
+                    for xp in xp_list:
+                        if "kawada" in xp.algo and setup_kawada in xp.headers[-1] and "SIDE" in xp.headers[-1]:
+                            print setup_kawada, " ", xp.headers[-1]
+                            if kpi_kawada == "Max tracking error":
+                                y_listFB.append(xp.MaxtrackingError_list[-1])
+                            if kpi_kawada == "Duration of the experiment":
+                                y_listFB.append(xp.DurationOfTheExperiment_list[-1])
+                            if kpi_kawada == "Base trajectory lenght":
+                                y_listFB.append(xp.base_traj_lenght[-1])
+                            setup_list.append(xp.setup[7:])
+                            print xp.setup[7:]
+                            nb_of_xp_list.append(1)
 
                     y_tuple = tuple(y_listFB)
                     setup_tuple = tuple(setup_list)
@@ -474,15 +533,64 @@ def plot_graph(list_mean_xp,xp_list) :
                     # print "setup_tuple : ",setup_tuple
                     ax[j, k].set_xticklabels(setup_tuple)
                     ax[j, k].set_yscale('log')
-                    if (key == "NPG" and xp_tmp.kpi_list[jk] == "Max tracking error") or key == "hwalk":
-                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.25))
-                    elif key == "Multiple algorithms":
+
+                    nb_points = len(y_listFB)
+                    ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.15))
+                    if setup_list[-1]=="Base trajectory lenght":
                         ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.35))
-                    elif key == "Beam":
-                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.1005))
-                    else:
-                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.105))
-                    # print "lim inf : ",ax[j, k].get_ylim()[0]," lim up : ",ax[j, k].get_ylim()[1]
+
+
+                    autolabel(rects1, ax, j, k, nb_of_xp_list, xp_tmp.kpi_list[jk], key)
+
+                    plt.show(block=False)
+                    jk += 1
+                    print "end loop one plot "
+            """
+            print "*********************", key
+            setup_list = []
+            setup_kawada_ = ["2Hz", "10mm"]
+            kpi_kawada_ = ["Max tracking error", "Duration of the experiment", "Base trajectory lenght"]
+            fig_list = plt.get_fignums()
+            plt.close(fig_list[-1])
+            fig, ax = plt.subplots(len(setup_kawada_), len(kpi_kawada_))
+            plt.suptitle("Algorithm : " + key)
+            jk = 0  # place of subplot
+            for j, setup_kawada in enumerate(setup_kawada_):  # 1st loop place subplot
+                for k, kpi_kawada in enumerate(kpi_kawada_):  # 2nd loop subplot
+                    print key, " ", kpi_kawada, " ", setup_kawada
+                    y_listFB = []
+                    y_listSD = []
+                    setup_list = []
+                    nb_of_xp_list = []
+                    for xp in xp_list:
+                        if "kawada" in xp.algo and setup_kawada in xp.headers[-1] and "SIDE" in xp.headers[-1]:
+                            print setup_kawada, " ", xp.headers[-1]
+                            if kpi_kawada == "Max tracking error":
+                                y_listSD.append(xp.MaxtrackingError_list[-1])
+                            if kpi_kawada == "Duration of the experiment":
+                                y_listSD.append(xp.DurationOfTheExperiment_list[-1])
+                            if kpi_kawada == "Base trajectory lenght":
+                                y_listSD.append(xp.base_traj_lenght[-1])
+                            setup_list.append(xp.setup[7:])
+                            print xp.setup[7:]
+                            nb_of_xp_list.append(1)
+
+                    y_tuple = tuple(y_listFB)
+                    setup_tuple = tuple(setup_list)
+                    N = len(y_tuple)
+
+                    ind = np.arange(N)  # the x locations for the groups
+                    width = 0.35  # the width of the bars
+
+                    rects1 = ax[j, k].bar(ind, y_tuple, width, color='r')
+
+                    # add some text for labels, title and axes ticks
+                    ax[j, k].set_ylabel(xp_tmp.dimension_list[jk])
+                    ax[j, k].set_title(kpi_kawada)
+                    ax[j, k].set_xticks(ind)
+                    # print "setup_tuple : ",setup_tuple
+                    ax[j, k].set_xticklabels(setup_tuple)
+                    ax[j, k].set_yscale('log')
 
                     nb_points = len(y_listFB)
 
@@ -490,8 +598,9 @@ def plot_graph(list_mean_xp,xp_list) :
 
                     plt.show(block=False)
                     jk += 1
-                    print "end loop one plot "
-            """fig_list=plt.get_fignums()
+                    print "end loop one plot 
+
+            fig_list=plt.get_fignums()
             plt.close(fig_list[-1])
             #close_figures() #################################   to be removed
             print "enter in plotting kawada"
@@ -547,8 +656,8 @@ def plot_graph(list_mean_xp,xp_list) :
                     plt.show(block=False)
                     print "end loop for kawada """""
 
-            """
-        if key=="kawada SD":
+
+            """if key=="kawada SD":
             plt.suptitle("Algorithm : " + key)
             print "*********************", key
             setup_list = []
