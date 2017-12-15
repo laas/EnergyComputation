@@ -533,6 +533,7 @@ int Experience::computeTheEnergy()
   if ( found1 != std::string::npos)
     specialDivision=1;
   astring = "translation" ;
+  found1 = experienceName_.find(astring);
   if ( found1 != std::string::npos)
     specialDivision=1;
 
