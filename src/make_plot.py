@@ -33,6 +33,7 @@ class XP :
         self.dimension_list = ["m","Dimensionless","rad","s","J.m-1.s-1","J.m-1.s-1","Dimensionless",
                                "Dimensionless","Dimensionless"]
         self.success_rate = 0.0
+        #self.direction = ""
         self.headers = []
         self.base_traj_lenght=[]
 
@@ -618,6 +619,13 @@ def plot_graph(list_mean_xp,xp_list) :
                                 print "intensity : TODO"
                             else:
                                 y_list.append(list_mean_xp[idx][xp.kpi_list.index(kpi)])
+                    # direction_list=[]
+                    # for xp in xp_list:
+                    #     if xp.algo==key:
+                    #         if xp.direction=="":
+                    #             direction_list.append(xp.setup)
+                    #         else:
+                    #             direction_list.append(xp.setup+"\n"+xp.direction)
                     print "setup_list", setup_list
                     print "y_list", y_list
 

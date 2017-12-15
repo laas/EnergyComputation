@@ -514,6 +514,8 @@ int Experience::computeTheEnergy()
   integration(powerOutputMotors_,energyOfMotors);
   vector< vector<double> > energyOfWalk ( N , vector<double> (ddl_,0) );
   integration(powerOfWalk_,energyOfWalk);
+  
+
 
 //  string dump ;
 //  dump = experienceName_ + "powerOfWalk_.dat" ;
