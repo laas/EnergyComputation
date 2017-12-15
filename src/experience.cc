@@ -413,7 +413,15 @@ int Experience::defineBeginEndIndexes()
     beginData_ = i ;
     ++i;
   }
-  //beginData_ = 0 ;
+  string astring = "halfsitting" ;
+  size_t found1;
+  found1 = experienceName_.find(astring);
+  if ( found1 != std::string::npos)
+  {
+     beginData_ = 0 ;
+     i=0;
+  }
+
   if(i == N)
   {
     cout << "Failure to find the beginning of the motion\n" ;
@@ -434,6 +442,7 @@ int Experience::defineBeginEndIndexes()
     endData_ = i ;
     ++i;
   }
+  
   endData_ = dq_.size()-1 ;
   cout << "BeginDataIndex : " << beginData_
        << " ; EndingDataIndex : " << endData_ << endl ;

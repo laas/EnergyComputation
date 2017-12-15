@@ -145,7 +145,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
             current_algo = "Multiple algorithms"#"Muscode"
         elif header_line[i].find("SteppingStones") != -1:
             current_algo = "Multiple algorithms"#"Stepping stones"
-        elif header_line[i].find("hakfsitting") != -1:
+        elif header_line[i].find("halfsitting") != -1:
             current_algo = "halfsitting"
         else :
             current_algo="nothing"
@@ -184,7 +184,7 @@ def discrimin_xp(header_file,header_line,list_lines_split):
             current_setup = "muscode"#"obstacle 20cm"
         elif header_line[i].find("SteppingStones") != -1:
             current_setup = "stepping stones"  # "bricks"
-        elif header_line[i].find("hakfsitting") != -1:
+        elif header_line[i].find("halfsitting") != -1:
             current_setup = "halfsitting"
         else :
             current_setup = "nothing"
@@ -292,7 +292,7 @@ def rm_absurd_values(xp):
 
     absurd_index_list = []
     # remove trials with null walked distance
-    if "kawada" in xp.algo:
+    if "kawada" in xp.algo or "halfsitting" in xp.algo:
         pass
     else :
         for distance in (xp.WalkedDistance_list):
@@ -315,7 +315,7 @@ def rm_absurd_values(xp):
 
     # remove trials duration over 200s
     absurd_index_list = []
-    if "kawada" in xp.algo or xp.setup=="Slne":
+    if "kawada" in xp.algo or xp.setup=="Slne" or "halfsitting" in xp.algo:
         pass
     else :
         for duration in (xp.DurationOfTheExperiment_list):
@@ -338,7 +338,7 @@ def rm_absurd_values(xp):
         return True #skip_this_xp
 
     #remove trials with duration far away of the others
-    if "kawada" in xp.algo:
+    if "kawada" in xp.algo or "halfsitting" in xp.algo:
         pass
     else:
         absurd_index_list = []
@@ -377,7 +377,7 @@ def rm_absurd_values(xp):
             return True
 
     # remove trials where the robot has fallen
-    if "kawada" in xp.algo or xp.setup=="Psh"or xp.setup=="muscode" or(xp.algo=="NPG" and xp.setup=="10°C"):
+    if "halfsitting" in xp.algo or "kawada" in xp.algo or xp.setup=="Psh"or xp.setup=="muscode" or(xp.algo=="NPG" and xp.setup=="10°C"):
         pass
     else :
         absurd_index_list = []
@@ -451,7 +451,7 @@ def plot_graph(list_mean_xp,xp_list) :
                     for xp in xp_list :
                         if ("kawada" in xp.algo and setup_kawada in xp.headers[-1] and "FB" in xp.headers[-1])\
                                 or "halfsitting" in xp.algo:
-                            print setup_kawada,  " ", xp.headers[-1]
+                            print setup_kawada#,  " ", xp.headers[-1]
                             if kpi_kawada=="Max tracking error":
                                 y_list.append(xp.MaxtrackingError_list[-1])
                             if kpi_kawada == "Total energy":
@@ -484,9 +484,13 @@ def plot_graph(list_mean_xp,xp_list) :
 
                     nb_points = len(y_list)
                     ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.15))
-                    if setup_list[-1] == "Base trajectory lenght" or setup_list[-1] == "Duration of the experiment":
-                        print "modification of limits"
-                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.35))
+                    # if (kpi_kawada == "Mechanical energy" or kpi_kawada == "Total energy") and "2Hz" in setup_list[-1]\
+                    #         or (kpi_kawada == "Mechanical energy" and "10mm" in setup_list[-1]):
+                    if kpi_kawada == "Mechanical energy":
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 2))
+
+                    if kpi_kawada == "Max tracking error" and "10mm" in setup_list[-1]:
+                        ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1]))
 
                     autolabel(rects1, ax, j, k, nb_of_xp_list, xp_tmp.kpi_list[jk], key)
 
@@ -552,7 +556,8 @@ def plot_graph(list_mean_xp,xp_list) :
 
                     nb_points = len(y_list)
                     ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.15))
-                    if setup_list[-1]=="Base trajectory lenght":
+                    if (kpi_kawada == "Mechanical energy" or kpi_kawada == "Total energy") and "2Hz" in setup_list[-1]\
+                            or (kpi_kawada == "Mechanical energy" and "10mm" in setup_list[-1]):
                         ax[j, k].set_ylim((ax[j, k].get_ylim()[0] * 0.95, ax[j, k].get_ylim()[1] * 1.35))
 
 
@@ -563,6 +568,7 @@ def plot_graph(list_mean_xp,xp_list) :
                     print "end loop one plot "
 
         else :
+            fig, ax = plt.subplots(3, 3)
             jk=0 #place of subplot
             for j in range(3): #1st loop place subplot
                 for k in range(3): #2nd loop subplot
