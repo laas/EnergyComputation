@@ -526,8 +526,12 @@ int Experience::computeTheEnergy()
 //  dump_.dump( dump , energyOfMotors ) ;
   int specialDivision = 0 ;
   string astring = "halfsitting" ;
-  bool found = experienceName_.find(astring);
-  if ( found != std::string::npos)
+  size_t found1;
+  found1 = experienceName_.find(astring);
+  if ( found1 != std::string::npos)
+    specialDivision=1;
+  astring = "translation" ;
+  if ( found1 != std::string::npos)
     specialDivision=1;
 
   if (walkedDistanced_ < 0.005 && specialDivision == 0)
