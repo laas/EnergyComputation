@@ -524,8 +524,13 @@ int Experience::computeTheEnergy()
 //  dump_.dump( dump , energyOfWalk ) ;
 //  dump = experienceName_ + "energyOfMotors.dat" ;
 //  dump_.dump( dump , energyOfMotors ) ;
+  int specialDivision = 0 ;
+  string astring = "halfsitting" ;
+  bool found = experienceName_.find(astring);
+  if ( found != std::string::npos)
+    specialDivision=1;
 
-  if (walkedDistanced_ < 0.005)
+  if (walkedDistanced_ < 0.005 && specialDivision == 0)
   {
     walkedDistanced_= 0;
     EnergyOfMotor_J_m_s_= 0;
@@ -545,18 +550,34 @@ int Experience::computeTheEnergy()
       EnergyOfMotorDDL += energyOfMotors.back()[j] ;
       EnergyOfWalkingDDL += energyOfWalk.back()[j] ;
     }
+    if (specialDivision==0)
+    {
+	    EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL   /walkedDistanced_
+		                     /(energyOfMotors.size()*0.005) ;
+	    EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL /walkedDistanced_
+		                     /(energyOfMotors.size()*0.005) ;
 
-    EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL   /walkedDistanced_
-                             /(energyOfMotors.size()*0.005) ;
-    EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL /walkedDistanced_
-                             /(energyOfMotors.size()*0.005) ;
+	    double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
 
-    double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
+	    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*walkedDistanced_) ;
+	    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*walkedDistanced_) ;
 
-    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_*walkedDistanced_) ;
-    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_*walkedDistanced_) ;
+	    FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
+    }
+    else
+    {
+            EnergyOfMotor_J_m_s_   = EnergyOfMotorDDL
+		                     /(energyOfMotors.size()*0.005) ;
+	    EnergyOfWalking_J_m_s_ = EnergyOfWalkingDDL
+		                     /(energyOfMotors.size()*0.005) ;
 
-    FroudeNumber_ = MeanVelocity / sqrt(Gravity_ * LegLenght_) ;
+	    double MeanVelocity = (walkedDistanced_  /(energyOfMotors.size()*0.005));
+
+	    MechaCostOfTransport_ = EnergyOfMotorDDL / (WeightOfRobot_) ;
+	    CostOfTransport_ = EnergyOfWalkingDDL / (WeightOfRobot_) ;
+
+	    FroudeNumber_ = 0 ;
+    }
   }
   return 0 ;
 }
